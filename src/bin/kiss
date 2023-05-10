@@ -1,0 +1,109 @@
+#!/usr/bin/env php
+<?php namespace Kiss;
+
+if (!is_file('vendor/autoload.php')) {
+  die("\nNo autoload.php found, you must launch 'make composer i' before.\n\n");
+}
+
+require_once 'vendor/autoload.php';
+
+$kiss = new Kiss();
+$totalTask = $kiss->newTask();
+
+try {
+  switch (@$argv[1]) {
+    case 'test':
+      $kiss->init();
+      break;
+
+    case 'build':
+      $kiss
+        ->version()
+        ->init()
+        ->copy()
+        ->css()
+        ->route()
+        ->img();
+      break;
+
+    case 'watch':
+      $kiss
+        ->version()
+        ->init()
+        ->copy()
+        ->css()
+        ->route()
+        ->img();
+
+      $kiss->log
+        ->line()
+        ->line('Watching...')
+        ->line();
+      $watches = $kiss->getWatches();
+      system(
+        <<<SH
+inotifywait -mrq -e close_write -e moved_to -e delete --format '%w%f' $watches | while read LINE; do vendor/bin/kiss watched \$LINE; done
+SH
+      );
+      break;
+
+    case 'watched':
+      $arg = $argv[2] ?? null;
+      $kiss->init()->watched($arg);
+      break;
+
+    case 'remove':
+      $arg = $argv[2] ?? 'all';
+      $kiss
+        ->version()
+        ->init()
+        ->remove($arg);
+      break;
+
+    case 'copy':
+      $arg = $argv[2] ?? null;
+      $kiss
+        ->version()
+        ->init()
+        ->copy($arg);
+      break;
+
+    case 'css':
+      $arg = $argv[2] ?? 'all';
+      $kiss
+        ->version()
+        ->init()
+        ->css($arg);
+      break;
+
+    case 'route':
+      $kiss
+        ->version()
+        ->init()
+        // ->data()
+        ->route();
+      break;
+
+    case 'img':
+      $kiss
+        ->version()
+        ->init()
+        ->img();
+      break;
+
+    default:
+      $kiss->version()->help();
+  }
+} catch (KissException $e) {
+  $kiss->log->error('{message} in {file} line {line}' . "\n" . '{trace}', [
+    '{message}' => $e->getMessage(),
+    '{file}' => $e->getFile(),
+    '{line}' => $e->getLine(),
+    '{trace}' => $e->getTraceAsString(),
+  ]);
+  $kiss->log->line();
+  die();
+}
+
+$kiss->log->line();
+$totalTask->end('total time');

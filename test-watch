@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# apt install inotify-tools
+
+dir="$PWD/src"
+
+while inotifywait -qre modify "$dir"; do
+    make tests
+done

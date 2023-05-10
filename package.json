@@ -1,0 +1,11 @@
+{
+  "name": "wordpress-install",
+  "license": "UNLICENSED",
+  "browserslist": [
+    "last 2 versions"
+  ],
+  "devDependencies": {
+    "@prettier/plugin-php": "*",
+    "prettier": "^2"
+  }
+}

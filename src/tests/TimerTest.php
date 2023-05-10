@@ -1,0 +1,59 @@
+<?php
+
+namespace Kiss;
+
+use PHPUnit\Framework\TestCase;
+
+final class TimerTest extends TestCase
+{
+    public function testTimer()
+    {
+        $timer = new Timer('test');
+        usleep(1);
+        $raw = $timer->getRaw('test');
+
+        $this->assertIsFloat($raw);
+        $this->assertGreaterThan(0, $raw);
+    }
+
+    public function testFormatDuration()
+    {
+        $tests = [
+            [0.000001, '1μs'],
+            [0.000009, '9μs'],
+            [0.00001, '10μs'],
+            [0.000999, '999μs'],
+            [0.001, '1ms'],
+            [0.001001, '1ms'],
+            [0.001049, '1ms'],
+            [0.00105, '1.1ms'],
+            [0.0011, '1.1ms'],
+            [0.0012, '1.2ms'],
+            [0.002, '2ms'],
+            [0.01, '10ms'],
+            [1, '1s'],
+            [9.9, '9.9s'],
+            [10, '10s'],
+            [60, '1min'],
+            [63, '1.1min'],
+            [111, '1.9min'],
+            [120, '2min'],
+            [130, '2.2min'],
+            [594, '9.9min'],
+            [600, '10min'],
+            [3540, '59min'],
+            [3600, '1h'],
+            [3800, '1.1h'],
+            [7200, '2h'],
+            [82800, '23h'],
+            [86400, '1d'],
+            [172800, '2d'],
+            [1728000, '20d'],
+            [8640000, '100d'],
+        ];
+
+        foreach ($tests as $test) {
+            $this->assertEquals(Timer::formatDuration($test[0]), $test[1]);
+        }
+    }
+}

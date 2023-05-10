@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<ruleset name="Coding Standard">
+  <description>Coding Standard</description>
+  <arg name="colors"/>
+
+  <arg name="extensions" value="php,md,yml"/>
+  
+  <rule ref="PSR12"/>
+
+</ruleset>
