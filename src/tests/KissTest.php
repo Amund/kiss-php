@@ -43,10 +43,5 @@ final class KissTest extends TestCase
         foreach ($kiss->config['path'] as $path) {
             $this->assertTrue(\is_dir($path));
         }
-        // dump(
-        //     vfsStream::inspect(
-        //         new \org\bovigo\vfs\visitor\vfsStreamStructureVisitor()
-        //     )
-        // )->getStructure();
     }
 }

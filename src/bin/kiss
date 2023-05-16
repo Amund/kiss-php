@@ -90,13 +90,7 @@ SH
       $kiss->version()->help();
   }
 } catch (KissException $e) {
-  // $kiss->log->error('{message} in {file} line {line}' . "\n" . '{trace}', [
-  //   '{message}' => $e->getMessage(),
-  //   '{file}' => $e->getFile(),
-  //   '{line}' => $e->getLine(),
-  //   '{trace}' => $e->getTraceAsString(),
-  // ]);
-  $kiss->log->error('{message}' . "\n" . '{trace}', [
+  $kiss->log->error('{message} in {file} line {line}' . "\n" . '{trace}', [
     '{message}' => $e->getMessage(),
     '{file}' => $e->getFile(),
     '{line}' => $e->getLine(),

@@ -2,6 +2,7 @@
 
 namespace Kiss;
 
+use Exception;
 use Kiss\DataTree;
 use Twig\Environment;
 use Kiss\KissException;
@@ -584,8 +585,16 @@ class Kiss
                 $this->scss();
             }
         } catch (KissException $e) {
-            $this->log->line(
-                Log::color($this->log->colorError, $e->getMessage())
+            $this->log->error($e->getMessage());
+        } catch (Throwable $e) {
+            $this->log->error(
+                '{message} in {file} line {line}' . "\n" . '{trace}',
+                [
+                    '{message}' => $e->getMessage(),
+                    '{file}' => $e->getFile(),
+                    '{line}' => $e->getLine(),
+                    '{trace}' => $e->getTraceAsString(),
+                ]
             );
         }
     }
