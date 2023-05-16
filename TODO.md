@@ -1,0 +1,7 @@
+- route: rewrite as separate routes, 1 datatree per route
+- data: rethink datatree cache (get_included_files())
+- data: global datatree ?
+- copy: rewrite custom mirror function ? hash based sync ?
+- img: src from copy ? thumbnails from twig function ?
+- register all files to sync dist ?
+- css: cache strategy based on map files ?

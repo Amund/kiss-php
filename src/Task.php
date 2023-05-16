@@ -6,10 +6,11 @@ class Task
 {
     private ?Log $log = null;
     private ?float $begin = null;
-    private float $end;
+    private ?float $end = null;
     private float $duration;
     private string $formattedDuration;
     private bool $verbose;
+    public array $saved;
 
     public function __construct(bool $verbose = false, Log $log = null)
     {
@@ -20,8 +21,8 @@ class Task
 
     public function begin(string $message = '', array $vars = []): Task
     {
-        if (!empty($message)) {
-            if ($this->log) {
+        if ($this->log) {
+            if (!empty($message)) {
                 $message .= '... ';
                 if ($this->verbose) {
                     $message = Log::color($this->log->colorVerbose, $message);
@@ -30,19 +31,23 @@ class Task
                     ($this->log)($message, $vars);
                 }
             }
+        } else {
+            $this->saved['begin'] = [$message, $vars];
         }
         return $this;
     }
 
     public function end(string $message = '', array $vars = []): Task
     {
-        $this->end = \microtime(true);
+        if (is_null($this->end)) {
+            $this->end = \microtime(true);
+        }
         $this->duration = $this->end - $this->begin;
         $this->formattedDuration = self::formatDuration($this->duration);
 
-        if (empty($message)) {
-            $message = Log::color('green', 'ok');
-        }
+        // if (empty($message)) {
+        //     $message = Log::color('green', 'ok');
+        // }
 
         if ($this->log) {
             if ($this->verbose) {
@@ -50,21 +55,26 @@ class Task
             }
             $message .= Log::color(
                 $this->log->colorDuration,
-                '  ' . $this->formattedDuration
+                ' ' . $this->formattedDuration
             );
             if ($this->log->verbose) {
                 $this->log->line($message, $vars);
             }
         } else {
-            // throw new KissException('too soon, no Log provided for now');
+            $this->saved['end'] = [$message, $vars];
         }
         return $this;
     }
 
-    public function setLog(Log $log): Task
+    public function setLog(Log $log): void
     {
         $this->log = $log;
-        return $this;
+
+        $beginMessage = $this->saved['begin'][0] ?? '';
+        $beginVars = $this->saved['begin'][1] ?? [];
+        $endMessage = $this->saved['end'][0] ?? '';
+        $endVars = $this->saved['end'][1] ?? [];
+        $this->begin($beginMessage, $beginVars)->end($endMessage, $endVars);
     }
 
     public static function formatDuration(float $seconds): string
@@ -89,6 +99,6 @@ class Task
             }
         }
 
-        return '0s';
+        return '1μs';
     }
 }

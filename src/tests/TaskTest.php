@@ -4,18 +4,8 @@ namespace Kiss;
 
 use PHPUnit\Framework\TestCase;
 
-final class TimerTest extends TestCase
+final class TaskTest extends TestCase
 {
-    public function testTimer()
-    {
-        $timer = new Timer('test');
-        usleep(1);
-        $raw = $timer->getRaw('test');
-
-        $this->assertIsFloat($raw);
-        $this->assertGreaterThan(0, $raw);
-    }
-
     public function testFormatDuration()
     {
         $tests = [
@@ -53,7 +43,7 @@ final class TimerTest extends TestCase
         ];
 
         foreach ($tests as $test) {
-            $this->assertEquals(Timer::formatDuration($test[0]), $test[1]);
+            $this->assertEquals(Task::formatDuration($test[0]), $test[1]);
         }
     }
 }

@@ -9,31 +9,26 @@ require_once 'vendor/autoload.php';
 
 $kiss = new Kiss();
 $totalTask = $kiss->newTask();
+$kiss->config();
 
 try {
   switch (@$argv[1]) {
     case 'test':
-      $kiss->init();
+      $kiss->warmup();
       break;
 
     case 'build':
       $kiss
         ->version()
-        ->init()
-        ->copy()
-        ->css()
-        ->route()
-        ->img();
+        ->warmup()
+        ->build();
       break;
 
     case 'watch':
       $kiss
         ->version()
-        ->init()
-        ->copy()
-        ->css()
-        ->route()
-        ->img();
+        ->warmup()
+        ->build();
 
       $kiss->log
         ->line()
@@ -49,37 +44,37 @@ SH
 
     case 'watched':
       $arg = $argv[2] ?? null;
-      $kiss->init()->watched($arg);
+      $kiss->warmup()->watched($arg);
       break;
 
-    case 'remove':
+    case 'reset':
       $arg = $argv[2] ?? 'all';
       $kiss
         ->version()
-        ->init()
-        ->remove($arg);
+        ->warmup()
+        ->reset($arg);
       break;
 
     case 'copy':
       $arg = $argv[2] ?? null;
       $kiss
         ->version()
-        ->init()
+        ->warmup()
         ->copy($arg);
       break;
 
-    case 'css':
+    case 'scss':
       $arg = $argv[2] ?? 'all';
       $kiss
         ->version()
-        ->init()
-        ->css($arg);
+        ->warmup()
+        ->scss($arg);
       break;
 
     case 'route':
       $kiss
         ->version()
-        ->init()
+        ->warmup()
         // ->data()
         ->route();
       break;
@@ -87,7 +82,7 @@ SH
     case 'img':
       $kiss
         ->version()
-        ->init()
+        ->warmup()
         ->img();
       break;
 
@@ -95,7 +90,13 @@ SH
       $kiss->version()->help();
   }
 } catch (KissException $e) {
-  $kiss->log->error('{message} in {file} line {line}' . "\n" . '{trace}', [
+  // $kiss->log->error('{message} in {file} line {line}' . "\n" . '{trace}', [
+  //   '{message}' => $e->getMessage(),
+  //   '{file}' => $e->getFile(),
+  //   '{line}' => $e->getLine(),
+  //   '{trace}' => $e->getTraceAsString(),
+  // ]);
+  $kiss->log->error('{message}' . "\n" . '{trace}', [
     '{message}' => $e->getMessage(),
     '{file}' => $e->getFile(),
     '{line}' => $e->getLine(),
@@ -106,4 +107,4 @@ SH
 }
 
 $kiss->log->line();
-$totalTask->end('total time');
+$totalTask->end('total time')->setLog($kiss->log);

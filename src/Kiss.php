@@ -9,16 +9,19 @@ use ScssPhp\ScssPhp\Compiler;
 use Symfony\Component\Yaml\Yaml;
 use Twig\Loader\FilesystemLoader;
 use Symfony\Component\Filesystem\Path;
+use Throwable;
 
 class Kiss
 {
     public string $version = '0.1';
-    private string $entry = 'kiss.yml';
+    public string $entry = 'kiss.yml';
+    public string $root = '';
+    public ?Log $log = null;
     private Environment $twig;
     private Compiler $scss;
-    public Log $log;
+    private array $preConfigTasks = [];
     private array $route = [];
-    private array $config = [
+    public array $config = [
         'path' => [
             'copy' => 'copy',
             'data' => 'data',
@@ -42,42 +45,16 @@ class Kiss
         'debug' => false,
     ];
 
-    public function __construct()
+    // handle config creation/loading
+    public function __construct(string $root = '')
     {
-        // create default entry file if not exists
-        if (!\is_file($this->entry)) {
-            \file_put_contents(
-                $this->entry,
-                \Symfony\Component\Yaml\Yaml::dump($this->config)
-            );
-            if (!\is_file($this->entry)) {
-                throw new KissException('can not write default config file');
-            }
-        }
-
-        // load entry
-        try {
-            $entry = Yaml::parseFile($this->entry);
-        } catch (\Exception $e) {
-            throw new KissException(
-                'loading or parsing error from config file'
-            );
-        }
-
-        // overrides by env
-        if (Tools::truthy($_ENV['KISS_DEBUG'] ?? '')) {
-            $entry['debug'] = true;
-        }
-        if (Tools::truthy($_ENV['KISS_VERBOSE'] ?? '')) {
-            $entry['log']['verbose'] = true;
-        }
-
-        // merge with default values
-        $this->config = Tools::merge($this->config, $entry);
-
-        $this->log = new Log($this->config['log']);
+        $this->root = Path::canonicalize($root);
+        $this->root = empty($this->root)
+            ? ''
+            : $this->root . \DIRECTORY_SEPARATOR;
     }
 
+    // cli version
     public function version()
     {
         $this->log
@@ -94,6 +71,7 @@ class Kiss
         return $this;
     }
 
+    // cli help
     public function help()
     {
         $description = [
@@ -116,7 +94,7 @@ class Kiss
                 'Remove dist or cache folder, or all if omitted',
             'copy [path]' =>
                 'Copy a single file from copy to dist, or launch a complete mirroring if omitted',
-            'css list|[name]' =>
+            'scss list|[name]' =>
                 'List main scss files, compile a single file or all if omitted',
             'route list|[name]' =>
                 'List routes, build a single route or all if omitted',
@@ -134,6 +112,7 @@ class Kiss
         return $this;
     }
 
+    // task objects factory
     public function newTask(bool $verbose = false): Task
     {
         if (!$this->log) {
@@ -145,9 +124,78 @@ class Kiss
         }
     }
 
-    // launch initialization of kiss
-    public function init()
+    // config creation/loading
+    public function config()
     {
+        // create default entry file if not exists
+        $entry = Path::canonicalize($this->root . $this->entry);
+        if (!\is_file($entry)) {
+            $task = $this->newTask()->begin(
+                'create default entry file "{path}"',
+                [
+                    '{path}' => $this->entry,
+                ]
+            );
+            $yaml = Yaml::dump($this->config);
+            $written = \file_put_contents($entry, $yaml);
+            if ($written === \false) {
+                throw new KissException('can not write default config file');
+            }
+            $task->end();
+            $this->preConfigTasks[] = $task;
+        }
+
+        // load entry
+        $task = $this->newTask(true)->begin('load entry file "{path}"', [
+            '{path}' => $this->entry,
+        ]);
+        try {
+            $entry = Yaml::parseFile($entry);
+        } catch (\Exception $e) {
+            throw new KissException(
+                'loading or parsing error from config file'
+            );
+        }
+        $task->end();
+        $this->preConfigTasks[] = $task;
+
+        // debug: override by env
+        $message = 'debug {value}';
+        if (\array_key_exists('KISS_DEBUG', $_ENV)) {
+            $entry['debug'] = Tools::truthy($_ENV['KISS_DEBUG']);
+            $message .= ' (overriden by env variable KISS_DEBUG)';
+        }
+        $this->preConfigTasks[] = $this->newTask(true)->end($message, [
+            '{value}' => $entry['debug'] ? 'on' : 'off',
+        ]);
+
+        // verbose: override by env
+        $message = 'verbose {value}';
+        if (\array_key_exists('KISS_VERBOSE', $_ENV)) {
+            $entry['log']['verbose'] = Tools::truthy($_ENV['KISS_VERBOSE']);
+            $message .= ' (overriden by env variable KISS_VERBOSE)';
+        }
+        $this->preConfigTasks[] = $this->newTask(true)->end($message, [
+            '{value}' => $entry['debug'] ? 'on' : 'off',
+        ]);
+
+        // merge with default values
+        $this->config = Tools::merge($this->config, $entry);
+        $this->log = new Log($this->config['log']);
+
+        return $this;
+    }
+
+    // init kiss environment
+    public function warmup()
+    {
+        // echo saved logs
+        if (\count($this->preConfigTasks) > 0) {
+            foreach ($this->preConfigTasks as $task) {
+                $task->setLog($this->log);
+            }
+        }
+
         // sanitize and ensure pathes exists
         $task = $this->newTask(true);
         $created = [];
@@ -156,11 +204,13 @@ class Kiss
             if ($k === 'cache') {
                 $path .= '/kiss';
             }
-            $path = \rtrim($path, '/');
+            $path = Path::isAbsolute($path) ? $path : $this->root . $path;
+            $path = Path::canonicalize($path);
+
             $this->config['path'][$k] = $path;
             if (!\is_dir($path)) {
-                \mkdir($path, 0777, true);
-                if (!\is_dir($path)) {
+                $written = \mkdir($path, 0777, \true);
+                if ($written === \false) {
                     $this->error(
                         'can not create "{path}" folder, defined in config "{path-entry}"',
                         [
@@ -224,6 +274,14 @@ class Kiss
         return $this;
     }
 
+    public function build()
+    {
+        $this->copy()
+            ->scss()
+            ->route()
+            ->img();
+    }
+
     public function data(string $path = null)
     {
         if ($path) {
@@ -248,12 +306,12 @@ class Kiss
         return $this;
     }
 
-    public function remove(string $arg = 'all')
+    public function reset(string $arg = 'all')
     {
         $args = ['all', 'dist', 'cache'];
         if (!\in_array($arg, $args)) {
             $this->error(
-                'remove accept "all", "dist" or "cache" as argument ("all" as default)'
+                'reset accept "all", "dist" or "cache" as argument ("all" as default)'
             );
         } else {
             if ($arg === 'all' || $arg === 'dist') {
@@ -283,7 +341,6 @@ class Kiss
 
     public function copy(string $path = null)
     {
-        $this->timer('copy', true);
         $copy = $this->config['path']['copy'];
         $dist = $this->config['path']['dist'];
         $copyPath = $copy . '/' . $path;
@@ -292,23 +349,28 @@ class Kiss
         if ($path) {
             if (is_file($copyPath)) {
                 // regular file, do the job
-                $this->log('copy file "{path-copy}" to "{path-dist}"... ', [
-                    '{path-copy}' => $copyPath,
-                    '{path-dist}' => $distPath,
-                ]);
+                $task = $this->newTask()->begin(
+                    'copy file "{path-copy}" to "{path-dist}"',
+                    [
+                        '{path-copy}' => $copyPath,
+                        '{path-dist}' => $distPath,
+                    ]
+                );
                 $dest = Path::makeRelative($path, $copy);
                 $dest = $dist . \DIRECTORY_SEPARATOR . $dest;
                 $this->copyFile($copyPath, $distPath);
+                $task->end();
             } else {
                 if (is_file($distPath)) {
                     // file exists in dist, remove it
-                    $this->log('remove "{path-dist}"... ', [
+                    $task = $this->newTask()->begin('remove "{path-dist}"', [
                         '{path-dist}' => $distPath,
                     ]);
                     $removed = \unlink($distPath);
                     if (!$removed) {
                         $this->error('error');
                     }
+                    $task->end();
                 } else {
                     $this->error(
                         'no "{path-copy}" to copy, nor "{path-dist}" to delete',
@@ -321,7 +383,7 @@ class Kiss
             }
         } else {
             // copy all
-            $this->log(
+            $task = $this->newTask()->begin(
                 'copy all files from "{path-copy}" to "{path-dist}"... ',
                 [
                     '{path-copy}' => $copy,
@@ -330,10 +392,8 @@ class Kiss
             );
             $fs = new \Symfony\Component\Filesystem\Filesystem();
             $fs->mirror($copy, $dist);
+            $task->end();
         }
-        $this->logLine(Tools::color('green', 'ok'), [
-            'duration' => $this->timer('copy'),
-        ]);
         return $this;
     }
 
@@ -378,39 +438,58 @@ class Kiss
         return $this;
     }
 
-    public function css(string $arg = 'all')
+    public function scss(string $arg = 'all')
     {
         $sources = $this->config['scss']['sources'];
         if (!\is_array($sources) || \count($sources) === 0) {
-            $this->logLine('css... ' . Tools::color('yellow', 'nothing to do'));
+            $this->log->line(
+                'css... ' .
+                    Log::color('yellow', 'no sources in config, nothing to do')
+            );
             return $this;
         }
 
-        $args = array_merge(['all'], array_keys($sources));
-
+        $args = array_merge(['all', 'list'], array_keys($sources));
         if (!\in_array($arg, $args)) {
             $this->error(
-                'css accept "all", "{files}" as argument ("all" as default)',
+                'css accept "all", "list", "{files}" as argument ("all" as default)',
                 [
                     '{files}' => implode('", "', array_keys($sources)),
                 ]
             );
-        } else {
-            if ($arg !== 'all') {
-                $sources = [$arg => $sources[$arg]];
+        }
+
+        if ($arg === 'list') {
+            $this->log->line('scss sources available :');
+            foreach ($sources as $k => $v) {
+                $this->log->line('   ' . $k);
             }
-            foreach ($sources as $src => $dest) {
-                $task = 'css compile "{path-src}" to "{path-dest}"... ';
-                $this->timer($task, true);
-                $this->log('css compile "{path-src}" to "{path-dest}"... ', [
+            return $this;
+        }
+
+        if ($arg !== 'all') {
+            $sources = [$arg => $sources[$arg]];
+        }
+
+        $scss = $this->config['path']['scss'];
+        $dist = $this->config['path']['dist'];
+        foreach ($sources as $k => $v) {
+            unset($sources[$k]);
+            $src = $scss . '/' . $k;
+            $dest = $dist . '/' . $v;
+            $sources[$src] = $dest;
+        }
+
+        foreach ($sources as $src => $dest) {
+            $task = $this->newTask()->begin(
+                'css compile "{path-src}" to "{path-dest}"',
+                [
                     '{path-src}' => $src,
                     '{path-dest}' => $dest,
-                ]);
-                $this->compileScssFile($src, $dest);
-                $this->logLine(Tools::color('green', 'ok'), [
-                    'duration' => $this->timer($task),
-                ]);
-            }
+                ]
+            );
+            $this->compileScssFile($src, $dest);
+            $task->end();
         }
 
         return $this;
@@ -418,7 +497,7 @@ class Kiss
 
     public function img()
     {
-        $this->logLine(Tools::cliDim('TODO: img'));
+        $this->log->line(Log::color('dim', 'TODO: img'));
         return $this;
     }
 
@@ -453,19 +532,22 @@ class Kiss
     //     return $this;
     // }
 
-    public function error(string $str, array $vars = [])
-    {
-        throw new KissException(strtr($str, $vars));
+    public function error(
+        string $str,
+        array $vars = [],
+        \Throwable $previous = null
+    ) {
+        throw new KissException(strtr($str, $vars), 0, $previous);
     }
 
     public function getWatches()
     {
         $watches = [
             $this->entry,
-            $this->data['config']['path']['copy'],
-            $this->data['config']['path']['data'],
-            $this->data['config']['path']['scss'],
-            $this->data['config']['path']['template'],
+            $this->config['path']['copy'],
+            $this->config['path']['data'],
+            $this->config['path']['scss'],
+            $this->config['path']['template'],
         ];
         return implode(' ', $watches);
     }
@@ -493,16 +575,18 @@ class Kiss
                 $path = Path::makeRelative($path, $data);
                 $this->data($path)
                     ->data()
-                    ->html();
+                    ->route();
             } elseif (str_starts_with($path, $template)) {
                 $path = Path::makeRelative($path, $template);
-                $this->data()->html();
+                $this->data()->route();
             } elseif (str_starts_with($path, $scss)) {
                 $path = Path::makeRelative($path, $scss);
-                $this->css();
+                $this->scss();
             }
         } catch (KissException $e) {
-            $this->logLine(Tools::color('red', $e->getMessage()));
+            $this->log->line(
+                Log::color($this->log->colorError, $e->getMessage())
+            );
         }
     }
 
@@ -542,9 +626,9 @@ class Kiss
     private function compileScssFile($src, $dest)
     {
         $scss = $this->config['path']['scss'];
-        $dist = $this->config['path']['dist'];
-        $src = $scss . '/' . $src;
-        $dest = $dist . '/' . $dest;
+        // $dist = $this->config['path']['dist'];
+        // $src = $scss . '/' . $src;
+        // $dest = $dist . '/' . $dest;
         $basename = basename($dest);
         if (!is_file($src)) {
             $this->error('source file not found');
@@ -560,7 +644,8 @@ class Kiss
         try {
             $compiled = $this->scss->compileString($content, $src);
         } catch (\Throwable $e) {
-            $this->error(preg_replace('#\n.+#', '', $e->getMessage()));
+            $message = preg_replace('#\n.+#', '', $e->getMessage());
+            $this->error($message, [], $e);
         }
         $this->dumpFile($dest, $compiled->getCss());
         $this->dumpFile($dest . '.map', $compiled->getSourceMap());
