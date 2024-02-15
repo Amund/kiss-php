@@ -31,7 +31,7 @@ logs:
 
 
 ## OUTILS COURANTS
-.PHONY: composer npm npx gulp deno kiss test
+.PHONY: composer npm npx gulp deno kiss tests test phpcs
 
 composer:
 	@docker compose exec app composer $(filter-out $@,$(MAKECMDGOALS)) || true
@@ -46,7 +46,7 @@ deno:
 kiss:
 	@docker compose exec app engine/bin/kiss $(filter-out $@,$(MAKECMDGOALS)) || true
 tests:
-	@docker compose exec app vendor/bin/phpunit --color --display-notices --coverage-html coverage src/tests || true
+	@docker compose exec app vendor/bin/phpunit --coverage-html coverage tests || true
 test:
 	@docker compose exec app vendor/bin/phpunit --color --display-warnings $(filter-out $@,$(MAKECMDGOALS)) || true
 phpcs:
