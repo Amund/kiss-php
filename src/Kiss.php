@@ -285,25 +285,25 @@ class Kiss
 
     public function data(string $path = null)
     {
-        if ($path) {
-            $this->log('Data changed in "{path}"... ', [
-                '{path}' => Tools::cliYellow($path),
-            ]);
-            $this->dt->invalidate($path);
-            $this->logLine(Tools::cliLightGreen('ok'));
-        } else {
-            $this->log('Resolve data tree... ');
-            try {
-                $this->data = $this->dt->resolve($this->data);
-            } catch (KissException $e) {
-                $this->logLine(Tools::cliLightRed($e->getMessage()));
-                if ($e->getPrevious()) {
-                    dump($e->getPrevious());
-                }
-                die();
-            }
-            $this->logLine(Tools::cliLightGreen('ok'));
-        }
+        // if ($path) {
+        //     $this->log('Data changed in "{path}"... ', [
+        //         '{path}' => Tools::cliYellow($path),
+        //     ]);
+        //     $this->dt->invalidate($path);
+        //     $this->logLine(Tools::cliLightGreen('ok'));
+        // } else {
+        //     $this->log('Resolve data tree... ');
+        //     try {
+        //         $this->data = $this->dt->resolve($this->data);
+        //     } catch (KissException $e) {
+        //         $this->logLine(Tools::cliLightRed($e->getMessage()));
+        //         if ($e->getPrevious()) {
+        //             dump($e->getPrevious());
+        //         }
+        //         die();
+        //     }
+        //     $this->logLine(Tools::cliLightGreen('ok'));
+        // }
         return $this;
     }
 
@@ -601,21 +601,21 @@ class Kiss
 
     private function getRoute(\SplFileInfo $file)
     {
-        $routePath = $this->config['path']['route'];
-        $item = new \SplFileInfo($routePath . '/' . $file);
-        $ext = strtolower($item->getExtension());
-        if ($item->isFile() && \in_array($ext, ['yml', 'yaml'])) {
-            try {
-                $routes[$route] = Yaml::parseFile($routePath . '/' . $route);
-            } catch (\Exception $e) {
-                $this->error(
-                    'loading or parsing error from route file "{path}"',
-                    [
-                        '{path}' => $route,
-                    ]
-                );
-            }
-        }
+        // $routePath = $this->config['path']['route'];
+        // $item = new \SplFileInfo($routePath . '/' . $file);
+        // $ext = strtolower($item->getExtension());
+        // if ($item->isFile() && \in_array($ext, ['yml', 'yaml'])) {
+        //     try {
+        //         $routes[$route] = Yaml::parseFile($routePath . '/' . $route);
+        //     } catch (\Exception $e) {
+        //         $this->error(
+        //             'loading or parsing error from route file "{path}"',
+        //             [
+        //                 '{path}' => $route,
+        //             ]
+        //         );
+        //     }
+        // }
     }
 
     private function getRoutes()
@@ -626,7 +626,7 @@ class Kiss
             $ext = strtolower($file->getExtension());
             if ($file->isFile() && \in_array($ext, ['yml', 'yaml'])) {
                 $name = $file->getFilename();
-                $routes[$name] = $this->getRoute($name);
+                // $routes[$name] = $this->getRoute($name);
             }
         }
         return $routes;

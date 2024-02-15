@@ -14,7 +14,7 @@ class Registry
 
     public function has($name)
     {
-        return \array_key_exists($name, $this->collection);
+        return array_key_exists($name, $this->collection);
     }
 
     public function get(?string $name = null)
@@ -46,7 +46,7 @@ class Registry
     public function save()
     {
         $content = '<?php return ' . var_export($this->collection, true) . ';';
-        \file_put_contents($this->path, $content);
+        file_put_contents($this->path, $content);
     }
 
     private function include($path)

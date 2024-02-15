@@ -6,6 +6,17 @@ use PHPUnit\Framework\TestCase;
 
 final class ToolsTest extends TestCase
 {
+    public function testSlugify()
+    {
+        $values = [
+            ['Poésie Française', 'poesie-francaise'],
+            ['C\'est le cœur du problème ?', 'c-est-le-coeur-du-probleme'],
+        ];
+        foreach ($values as $v) {
+            $this->assertEquals(Tools::slugify($v[0]), $v[1]);
+        }
+    }
+
     public function testMerge()
     {
         $values = [
@@ -21,6 +32,20 @@ final class ToolsTest extends TestCase
 
         foreach ($values as $v) {
             $this->assertEquals(Tools::merge($v[0], $v[1]), $v[2]);
+        }
+    }
+
+    public function testNormalizeSource()
+    {
+        $cwd = getcwd();
+        $values = [
+            ['test', null, $cwd . \DIRECTORY_SEPARATOR . 'test'],
+            ['test', '/base', '/base' . \DIRECTORY_SEPARATOR . 'test'],
+            ['http://test', null, 'http://test'],
+        ];
+
+        foreach ($values as $v) {
+            $this->assertEquals(Tools::normalizeSource($v[0], $v[1]), $v[2]);
         }
     }
 }

@@ -2,10 +2,42 @@
 
 namespace Kiss;
 
+use Kiss\Log;
 use PHPUnit\Framework\TestCase;
 
 final class TaskTest extends TestCase
 {
+    public function testTask()
+    {
+        $task = new Task();
+        $this->assertIsFloat($task->begin);
+        $this->assertNull($task->end);
+
+        $task->end();
+        $this->assertIsFloat($task->end);
+        $this->assertTrue($task->end > $task->begin);
+
+        $this->assertIsFloat($task->duration);
+        $this->assertEquals($task->duration, $task->end - $task->begin);
+    }
+
+    public function testTaskOutputOnBegin()
+    {
+        $this->expectOutputRegex('#test\.\.\.#');
+        $log = new Log(['verbose' => true]);
+        $task = new Task(true, $log);
+        $task->begin('test');
+    }
+
+    public function testTaskOutputOnEnd()
+    {
+        $this->expectOutputRegex('#test\.\.\..+\d+(?:μs|ms|s|min|h|d).+#');
+        $log = new Log(['verbose' => true]);
+        $task = new Task(true, $log);
+        $task->begin('test');
+        $task->end();
+    }
+
     public function testFormatDuration()
     {
         $tests = [

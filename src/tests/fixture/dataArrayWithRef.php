@@ -1,5 +1,5 @@
 <?php
 
 return [
-  '$ref' => __DIR__ . '/data.php',
+    '$ref' => __DIR__ . '/data.php',
 ];

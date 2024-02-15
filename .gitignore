@@ -3,3 +3,5 @@
 /web
 /tmp
 /node_modules
+/coverage
+/.env

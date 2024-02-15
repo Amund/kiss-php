@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<phpunit
+    colors="true"
+    displayDetailsOnTestsThatTriggerDeprecations="true"
+    displayDetailsOnTestsThatTriggerNotices="true"
+    displayDetailsOnTestsThatTriggerWarnings="true"
+    displayDetailsOnTestsThatTriggerErrors="true"
+    cacheDirectory="/tmp"
+    >
+
+    <testsuites>
+        <testsuite name="unit">
+            <directory
+                phpVersion="8.2.0" phpVersionOperator=">="
+                >
+                src/tests
+            </directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory suffix=".php">src</directory>
+            <file>src/bin/kiss</file>
+        </include>
+        <exclude>
+            <directory suffix=".php">src/tests</directory>
+        </exclude>
+    </source>
+</phpunit>

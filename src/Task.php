@@ -5,11 +5,11 @@ namespace Kiss;
 class Task
 {
     private ?Log $log = null;
-    private ?float $begin = null;
-    private ?float $end = null;
-    private float $duration;
-    private string $formattedDuration;
-    private bool $verbose;
+    public ?float $begin = null;
+    public ?float $end = null;
+    public float $duration;
+    public string $formattedDuration;
+    public bool $verbose;
     public array $saved;
 
     public function __construct(bool $verbose = false, Log $log = null)
@@ -44,10 +44,6 @@ class Task
         }
         $this->duration = $this->end - $this->begin;
         $this->formattedDuration = self::formatDuration($this->duration);
-
-        // if (empty($message)) {
-        //     $message = Log::color('green', 'ok');
-        // }
 
         if ($this->log) {
             if ($this->verbose) {
@@ -98,7 +94,5 @@ class Task
                     : $result . $unit;
             }
         }
-
-        return '1μs';
     }
 }

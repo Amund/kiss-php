@@ -1,11 +1,10 @@
 version: '3'
 
 services:
-
   app:
     container_name: app-$PROJECT
     # build: .
-    image: vupar/app:8.1
+    image: vupar/app:8.2
     restart: unless-stopped
     env_file: .env
     networks:

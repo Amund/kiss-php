@@ -2,29 +2,24 @@
 
 namespace Kiss;
 
-use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 
 final class RouteTest extends TestCase
 {
-    private $root;
-
-    public function setUp(): void
+    public function testLoadFromPhp()
     {
-        $this->root = vfsStream::setup();
+        $return = ['path' => 'test2', 'template' => 'test3'];
+        $stub = $this->createStub(DataSource::class);
+        $stub->method('load')->willReturn($return);
+        // $root = vfsStream::create([
+        //     // 'route1.yml' => '{path:test1,template:test1}',
+        //     // 'route2.json' => '{"path":"test2","template":"test2"}',
+        //     'route3.php' =>
+        //         '<?php return ["path"=>"test2","template"=>"test3"];',
+        // ]);
+        // $route = new Route('path');
+        $this->assertSame($return, $stub->load(''));
     }
-
-    // public function testLoadFromPhp()
-    // {
-    //     $root = vfsStream::create([
-    //         // 'route1.yml' => '{path:test1,template:test1}',
-    //         // 'route2.json' => '{"path":"test2","template":"test2"}',
-    //         'route3.php' =>
-    //             '<?php return ["path"=>"test2","template"=>"test3"];',
-    //     ]);
-    //     $route = new Route('path');
-    //     $this->assertEquals('test1', $route->path);
-    // }
     // public function testGetPagesWithoutParams()
     // {
     //     $input = [

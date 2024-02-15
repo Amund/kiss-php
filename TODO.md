@@ -5,3 +5,7 @@
 - img: src from copy ? thumbnails from twig function ?
 - register all files to sync dist ?
 - css: cache strategy based on map files ?
+- refactor datatree with datasource
+- datasource: save yaml (+refactor saving default config in kiss)
+- datasource: save php (+refactor saving cache in datatree)
+- kiss: remove scss

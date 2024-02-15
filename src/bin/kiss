@@ -2,7 +2,9 @@
 <?php namespace Kiss;
 
 if (!is_file('vendor/autoload.php')) {
-  die("\nNo autoload.php found, you must launch 'make composer i' before.\n\n");
+    die(
+        "\nNo autoload.php found, you must launch 'make composer i' before.\n\n"
+    );
 }
 
 require_once 'vendor/autoload.php';
@@ -12,92 +14,92 @@ $totalTask = $kiss->newTask();
 $kiss->config();
 
 try {
-  switch (@$argv[1]) {
-    case 'test':
-      $kiss->warmup();
-      break;
+    switch (@$argv[1]) {
+        case 'test':
+            $kiss->warmup();
+            break;
 
-    case 'build':
-      $kiss
-        ->version()
-        ->warmup()
-        ->build();
-      break;
+        case 'build':
+            $kiss
+                ->version()
+                ->warmup()
+                ->build();
+            break;
 
-    case 'watch':
-      $kiss
-        ->version()
-        ->warmup()
-        ->build();
+        case 'watch':
+            $kiss
+                ->version()
+                ->warmup()
+                ->build();
 
-      $kiss->log
-        ->line()
-        ->line('Watching...')
-        ->line();
-      $watches = $kiss->getWatches();
-      system(
-        <<<SH
+            $kiss->log
+                ->line()
+                ->line('Watching...')
+                ->line();
+            $watches = $kiss->getWatches();
+            system(
+                <<<SH
 inotifywait -mrq -e close_write -e moved_to -e delete --format '%w%f' $watches | while read LINE; do vendor/bin/kiss watched \$LINE; done
 SH
-      );
-      break;
+            );
+            break;
 
-    case 'watched':
-      $arg = $argv[2] ?? null;
-      $kiss->warmup()->watched($arg);
-      break;
+        case 'watched':
+            $arg = $argv[2] ?? null;
+            $kiss->warmup()->watched($arg);
+            break;
 
-    case 'reset':
-      $arg = $argv[2] ?? 'all';
-      $kiss
-        ->version()
-        ->warmup()
-        ->reset($arg);
-      break;
+        case 'reset':
+            $arg = $argv[2] ?? 'all';
+            $kiss
+                ->version()
+                ->warmup()
+                ->reset($arg);
+            break;
 
-    case 'copy':
-      $arg = $argv[2] ?? null;
-      $kiss
-        ->version()
-        ->warmup()
-        ->copy($arg);
-      break;
+        case 'copy':
+            $arg = $argv[2] ?? null;
+            $kiss
+                ->version()
+                ->warmup()
+                ->copy($arg);
+            break;
 
-    case 'scss':
-      $arg = $argv[2] ?? 'all';
-      $kiss
-        ->version()
-        ->warmup()
-        ->scss($arg);
-      break;
+        case 'scss':
+            $arg = $argv[2] ?? 'all';
+            $kiss
+                ->version()
+                ->warmup()
+                ->scss($arg);
+            break;
 
-    case 'route':
-      $kiss
-        ->version()
-        ->warmup()
-        // ->data()
-        ->route();
-      break;
+        case 'route':
+            $kiss
+                ->version()
+                ->warmup()
+                // ->data()
+                ->route();
+            break;
 
-    case 'img':
-      $kiss
-        ->version()
-        ->warmup()
-        ->img();
-      break;
+        case 'img':
+            $kiss
+                ->version()
+                ->warmup()
+                ->img();
+            break;
 
-    default:
-      $kiss->version()->help();
-  }
+        default:
+            $kiss->version()->help();
+    }
 } catch (KissException $e) {
-  $kiss->log->error('{message} in {file} line {line}' . "\n" . '{trace}', [
-    '{message}' => $e->getMessage(),
-    '{file}' => $e->getFile(),
-    '{line}' => $e->getLine(),
-    '{trace}' => $e->getTraceAsString(),
-  ]);
-  $kiss->log->line();
-  die();
+    $kiss->log->error('{message} in {file} line {line}' . "\n" . '{trace}', [
+        '{message}' => $e->getMessage(),
+        '{file}' => $e->getFile(),
+        '{line}' => $e->getLine(),
+        '{trace}' => $e->getTraceAsString(),
+    ]);
+    $kiss->log->line();
+    die();
 }
 
 $kiss->log->line();

@@ -46,7 +46,7 @@ deno:
 kiss:
 	@docker compose exec app engine/bin/kiss $(filter-out $@,$(MAKECMDGOALS)) || true
 tests:
-	@docker compose exec app vendor/bin/phpunit --color --display-warnings src/tests || true
+	@docker compose exec app vendor/bin/phpunit --color --display-notices --coverage-html coverage src/tests || true
 test:
 	@docker compose exec app vendor/bin/phpunit --color --display-warnings $(filter-out $@,$(MAKECMDGOALS)) || true
 phpcs:

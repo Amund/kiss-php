@@ -33,4 +33,26 @@ final class LogTest extends TestCase
         $log = new Log();
         $log->line('foo {param}', ['{param}' => 'bar']);
     }
+
+    public function testUnknownColor()
+    {
+        $log = Log::color('unknown', 'foo');
+        $this->assertEquals('foo', $log);
+    }
+
+    public function testError()
+    {
+        $this->expectOutputString('foo' . "\n");
+        $log = new Log();
+        $log->colorError = '';
+        $log->error('foo');
+    }
+
+    public function testMessageWithPath()
+    {
+        $log = new Log();
+        $log->colorPath = '';
+        $message = $log->message('foo', ['{path}' => 'bar']);
+        $this->assertEquals('foo', $message);
+    }
 }
