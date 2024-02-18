@@ -2,9 +2,9 @@
 
 namespace Kiss\DataSource;
 
-use Kiss\DataSource\AbstractDataSource;
+use Kiss\DataSource\AbstractLoader;
 
-class JsonDataSource extends AbstractDataSource
+class JsonLoader extends AbstractLoader
 {
     public function __construct(string $filePath)
     {

@@ -8,7 +8,7 @@ use Kiss\KissException;
  * The `AbstractDataSource` class is an abstract class that provides common functionality for
  * `DataSource` classes.
  */
-abstract class AbstractDataSource
+abstract class AbstractLoader
 {
     protected ?string $filePath = null;
     protected mixed $content = null;

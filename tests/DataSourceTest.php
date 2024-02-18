@@ -5,9 +5,6 @@ namespace Kiss;
 use Kiss\DataSource;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
-use Kiss\DataSource\PhpDataSource;
-use Kiss\DataSource\JsonDataSource;
-use Kiss\DataSource\YamlDataSource;
 
 final class DataSourceTest extends TestCase
 {
@@ -23,12 +20,9 @@ final class DataSourceTest extends TestCase
         vfsStream::create(['test.php' => '<?php return "ok";']);
         $path = $this->root->url() . '/test.php';
 
-        $ds = DataSource::create($path);
-        $this->assertInstanceOf(PhpDataSource::class, $ds);
-        $this->assertEquals(null, $ds->content());
-        $this->assertEquals('ok', $ds->load());
-        $this->assertEquals('ok', $ds->content());
-        $this->assertEquals($path, $ds->filePath());
+        $ds = new DataSource($path);
+        $this->assertEquals('ok', $ds->content);
+        $this->assertEquals($path, $ds->filePath);
     }
 
     public function testLoadFromBadPhpFileMustThrowException()
@@ -36,10 +30,8 @@ final class DataSourceTest extends TestCase
         $this->expectException(KissException::class);
 
         $path = $this->root->url() . '/test.php';
-
         vfsStream::create(['test.php' => '<?php throw new Exception();']);
-        $ds = DataSource::create($path);
-        $ds->load();
+        $ds = new DataSource($path);
     }
 
     public function testLoadFromJson()
@@ -47,20 +39,18 @@ final class DataSourceTest extends TestCase
         vfsStream::create(['test.json' => '"ok"']);
         $path = $this->root->url() . '/test.json';
 
-        $ds = DataSource::create($path);
-        $this->assertInstanceOf(JsonDataSource::class, $ds);
-        $this->assertEquals('ok', $ds->load());
+        $ds = new DataSource($path);
+        $this->assertEquals('ok', $ds->content);
+        $this->assertEquals($path, $ds->filePath);
     }
 
     public function testLoadFromBadJsonFileMustThrowException()
     {
         $this->expectException(KissException::class);
 
-        vfsStream::create(['test.json' => '?']);
         $path = $this->root->url() . '/test.json';
-
-        $ds = DataSource::create($path);
-        $ds->load();
+        vfsStream::create(['test.json' => '?']);
+        $ds = new DataSource($path);
     }
 
     public function testLoadFromYaml()
@@ -68,20 +58,18 @@ final class DataSourceTest extends TestCase
         vfsStream::create(['test.yml' => 'ok']);
         $path = $this->root->url() . '/test.yml';
 
-        $ds = DataSource::create($path);
-        $this->assertInstanceOf(YamlDataSource::class, $ds);
-        $this->assertEquals('ok', $ds->load());
+        $ds = new DataSource($path);
+        $this->assertEquals('ok', $ds->content);
+        $this->assertEquals($path, $ds->filePath);
     }
 
     public function testLoadFromBadYamlFileMustThrowException()
     {
         $this->expectException(KissException::class);
 
-        vfsStream::create(['test.yml' => "'''"]);
         $path = $this->root->url() . '/test.yml';
-
-        $ds = DataSource::create($path);
-        $ds->load();
+        vfsStream::create(['test.yml' => "'''"]);
+        $ds = new DataSource($path);
     }
 
     public function testLoadFromNotAFileMustThrowException()
@@ -91,8 +79,7 @@ final class DataSourceTest extends TestCase
         $path = $this->root->url() . '/test.php';
         $this->assertFalse($this->root->hasChild('test.php'));
 
-        $ds = DataSource::create($path);
-        $ds->load();
+        $ds = new DataSource($path);
     }
 
     public function testLoadFromUnknownFormatMustThrowException()
@@ -102,7 +89,6 @@ final class DataSourceTest extends TestCase
         vfsStream::create(['test.unknown' => 'ok']);
         $path = $this->root->url() . '/test.unknown';
 
-        $ds = DataSource::create($path);
-        $ds->load();
+        $ds = new DataSource($path);
     }
 }

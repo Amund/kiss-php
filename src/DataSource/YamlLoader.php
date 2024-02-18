@@ -3,9 +3,9 @@
 namespace Kiss\DataSource;
 
 use Symfony\Component\Yaml\Yaml;
-use Kiss\DataSource\AbstractDataSource;
+use Kiss\DataSource\AbstractLoader;
 
-class YamlDataSource extends AbstractDataSource
+class YamlLoader extends AbstractLoader
 {
     public function __construct(string $filePath)
     {

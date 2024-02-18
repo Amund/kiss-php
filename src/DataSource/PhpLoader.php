@@ -2,9 +2,9 @@
 
 namespace Kiss\DataSource;
 
-use Kiss\DataSource\AbstractDataSource;
+use Kiss\DataSource\AbstractLoader;
 
-class PhpDataSource extends AbstractDataSource
+class PhpLoader extends AbstractLoader
 {
     public function __construct(string $filePath)
     {
