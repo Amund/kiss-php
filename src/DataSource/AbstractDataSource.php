@@ -61,9 +61,9 @@ abstract class AbstractDataSource
     /**
      * Throw a `KissException`.
      *
-     * @param string $str description
-     * @param array|null $args description
-     * @param \Throwable|null $previous description
+     * @param string $str The error message, containing placeholders
+     * @param array|null $args Variables to interpolate in the message
+     * @param \Throwable|null $previous Previous exception
      * @throws KissException description of exception
      * @return void
      */

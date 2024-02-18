@@ -21,7 +21,7 @@ class DataSource
      * The function `create` creates a new `DataSource` object based on the provided file path and
      * extension.
      *
-     * @param filePath The `filePath` parameter is a string that represents the path to the file that
+     * @param string $filePath The `filePath` parameter is a string that represents the path to the file that
      * needs to be loaded or saved.
      *
      * @throws KissException if the file extension is not one of the supported extensions
