@@ -19,4 +19,12 @@ class KissException extends \Exception
     ) {
         parent::__construct($message, $code, $previous);
     }
+
+    public static function throw(
+        string $str,
+        array $vars = [],
+        \Throwable $previous = null
+    ) {
+        throw new KissException(strtr($str, $vars), 0, $previous);
+    }
 }
