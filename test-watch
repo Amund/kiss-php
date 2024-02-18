@@ -2,8 +2,6 @@
 
 # apt install inotify-tools
 
-dir="$PWD/src"
-
-while inotifywait -qre modify "$dir"; do
+while inotifywait -qre modify "$PWD/src" "$PWD/tests"; do
     make tests
 done
