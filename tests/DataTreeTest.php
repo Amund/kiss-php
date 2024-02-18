@@ -2,14 +2,17 @@
 
 namespace Kiss;
 
+use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 
 final class DataTreeTest extends TestCase
 {
+    private $root;
     private $tree;
 
     public function setUp(): void
     {
+        $this->root = vfsStream::setup();
         $options = ['cache' => 'tmp/test'];
         $this->tree = new DataTree($options);
     }

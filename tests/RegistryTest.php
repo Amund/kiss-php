@@ -14,27 +14,24 @@ final class RegistryTest extends TestCase
         $this->root = vfsStream::setup();
     }
 
-    public function testHasGetSet()
+    public function testManipulateInMemory()
     {
         $registry = new Registry('fake.php');
+
         $this->assertFalse($registry->has('foo'));
         $this->assertNull($registry->get('foo'));
 
         $registry->set('foo', 'bar');
+
         $this->assertTrue($registry->has('foo'));
         $this->assertEquals('bar', $registry->get('foo'));
 
         $this->assertEquals(['foo' => 'bar'], $registry->get());
-    }
-
-    public function testRemove()
-    {
-        $registry = new Registry('fake.php');
-        $registry->set('foo', 'bar');
-        $this->assertTrue($registry->has('foo'));
 
         $registry->remove('foo');
+
         $this->assertFalse($registry->has('foo'));
+        $this->assertEquals([], $registry->get());
     }
 
     public function testSave()

@@ -2,6 +2,12 @@
 
 namespace Kiss;
 
+/*
+ * - Load a route from a datasource.
+ * - Resolve schema
+ * - Resolve datatree
+ * - Check datatree validity from schema
+ */
 class Route
 {
     public string $name;
@@ -9,9 +15,20 @@ class Route
     public string $template;
     public mixed $data;
 
-    const PARAMS_MATCHER = '#{([^}]+)}#';
+    public string $test = <<<JSON
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "http://kiss.io/route.json",
+    "type": "object",
+    "properties": {
+    },
+    "required": ["type", "path", "template", "data"],
+    "additionalProperties": false
+}
+JSON;
 
-    public function __construct(string $path, DataSource $datasource)
+    const PARAMS_MATCHER = '#{([^}]+)}#';
+    public function __construct(DataSource $datasource)
     {
     }
 

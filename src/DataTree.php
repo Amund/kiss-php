@@ -175,13 +175,13 @@ class DataTree
      * The function `load()` is used to load and parse data from different file formats (PHP, JSON, YAML)
      * and return the content as an array.
      *
-     * @param source The `source` parameter is the path to the file that needs to be loaded. It can be a
+     * @param $source The `source` parameter is the path to the file that needs to be loaded. It can be a
      * YAML, JSON, or PHP file.
      *
-     * @return the content of the file that was loaded. The content can be an array or an object, but if it
+     * @return mixed content of the file that was loaded. The content can be an array or an object, but if it
      * is an object, it will be cast to an array before being returned.
      */
-    private function load($source)
+    private function load($source): mixed
     {
         $ext = pathinfo($source, PATHINFO_EXTENSION);
         $ext = strtolower($ext);
@@ -236,29 +236,28 @@ class DataTree
     }
 
     /**
-     * The function checks if a given source exists as a key in the fragments array.
+     * The function checks if a given key exists in an array.
      *
-     * @param source The `source` parameter is the key that is being checked for existence in the
-     * `->fragments` array.
-     *
-     * @return the result of the `array_key_exists()` function, which checks if a given key exists in an
+     * @param key The "key" parameter is the key that you want to check for existence in the "fragments"
      * array.
+     *
+     * @return bool a boolean value, either true or false.
      */
-    private function has($source)
+    private function has(string $key): bool
     {
-        return \array_key_exists($source, $this->fragments);
+        return array_key_exists($key, $this->fragments);
     }
 
     /**
-     * The function `getCachePath` returns the path to a cached PHP file based on the source code and cache
-     * options.
+     * The function `getCachePath` takes a source string, hashes it using a specified algorithm, and
+     * returns the path to a cache file with the hashed value as the filename.
      *
-     * @param source The source parameter is a string that represents the content or data that needs to be
-     * cached.
+     * @param string $source The `source` parameter is a string that represents the source code that needs
+     * to be cached.
      *
-     * @return the path to the cache file.
+     * @return string a string that represents the cache path for a given source code.
      */
-    private function getCachePath($source)
+    private function getCachePath(string $source): string
     {
         $path = $this->options['cache'];
         $hash = $this->options['hash'];
@@ -267,14 +266,23 @@ class DataTree
     }
 
     /**
-     * The function includes a PHP file and returns the result.
+     * The function attempts to include a PHP file and returns the result, but throws a custom exception if
+     * an error occurs.
      *
-     * @param source The parameter "source" is the path to the file that you want to include in your code.
+     * @param string $source The parameter `source` is a string that represents the path to the file that
+     * you want to include or require.
      *
-     * @return the result of the `include` statement.
+     * @return mixed the result of the `require` statement.
      */
-    private function include($source)
+    private function include(string $source): mixed
     {
-        return include $source;
+        // return include $source;
+        try {
+            return require $source;
+        } catch (\Throwable $e) {
+            throw new KissException(
+                'Can\'t load "' . $source . '" (' . $e->getCode() . ')'
+            );
+        }
     }
 }
