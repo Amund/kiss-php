@@ -31,7 +31,7 @@ final class DataSourceTest extends TestCase
         $this->assertEquals($path, $ds->filePath());
     }
 
-    public function testLoadFromBadPhpFileMustThrownException()
+    public function testLoadFromBadPhpFileMustThrowException()
     {
         $this->expectException(KissException::class);
 
@@ -52,7 +52,7 @@ final class DataSourceTest extends TestCase
         $this->assertEquals('ok', $ds->load());
     }
 
-    public function testLoadFromBadJsonFileMustThrownException()
+    public function testLoadFromBadJsonFileMustThrowException()
     {
         $this->expectException(KissException::class);
 
@@ -73,7 +73,18 @@ final class DataSourceTest extends TestCase
         $this->assertEquals('ok', $ds->load());
     }
 
-    public function testLoadFromNotAFileMustThrownException()
+    public function testLoadFromBadYamlFileMustThrowException()
+    {
+        $this->expectException(KissException::class);
+
+        vfsStream::create(['test.yml' => "'''"]);
+        $path = $this->root->url() . '/test.yml';
+
+        $ds = DataSource::create($path);
+        $ds->load();
+    }
+
+    public function testLoadFromNotAFileMustThrowException()
     {
         $this->expectException(KissException::class);
 
@@ -84,7 +95,7 @@ final class DataSourceTest extends TestCase
         $ds->load();
     }
 
-    public function testLoadFromUnknownFormatMustThrownException()
+    public function testLoadFromUnknownFormatMustThrowException()
     {
         $this->expectException(KissException::class);
 

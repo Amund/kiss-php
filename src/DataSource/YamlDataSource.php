@@ -2,8 +2,8 @@
 
 namespace Kiss\DataSource;
 
-use Kiss\DataSource\AbstractDataSource;
 use Symfony\Component\Yaml\Yaml;
+use Kiss\DataSource\AbstractDataSource;
 
 class YamlDataSource extends AbstractDataSource
 {
@@ -14,7 +14,15 @@ class YamlDataSource extends AbstractDataSource
 
     public function load(): mixed
     {
-        $this->content = Yaml::parseFile($this->filePath);
+        try {
+            $this->content = Yaml::parseFile($this->filePath);
+        } catch (\Throwable $err) {
+            $this->error(
+                'Parsing error in "{path}" YAML DataSource',
+                ['{path}' => $this->filePath],
+                $err
+            );
+        }
         return $this->content;
     }
 }
