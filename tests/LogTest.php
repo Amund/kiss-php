@@ -34,6 +34,12 @@ final class LogTest extends TestCase
         $log->line('foo {param}', ['{param}' => 'bar']);
     }
 
+    public function testColor()
+    {
+        $log = Log::color('bold', 'foo');
+        $this->assertEquals("\033[1mfoo\033[22m", $log);
+    }
+
     public function testUnknownColor()
     {
         $log = Log::color('unknown', 'foo');
