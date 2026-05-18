@@ -3,6 +3,9 @@
 namespace Kiss;
 
 use Kiss\DataSource;
+use Kiss\DataSource\PhpLoader;
+use Kiss\DataSource\JsonLoader;
+use Kiss\DataSource\YamlLoader;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 
@@ -173,5 +176,44 @@ final class DataSourceTest extends TestCase
 
         unlink($srcPath);
         unlink($dstPath);
+    }
+
+    public function testPhpLoaderPublicMethods()
+    {
+        $path = sys_get_temp_dir() . '/kiss-test-loader-php-' . uniqid() . '.php';
+        file_put_contents($path, '<?php return "data";');
+
+        $loader = new PhpLoader($path);
+        $loader->load();
+        $this->assertSame($path, $loader->filePath());
+        $this->assertSame('data', $loader->content());
+
+        unlink($path);
+    }
+
+    public function testJsonLoaderPublicMethods()
+    {
+        $path = sys_get_temp_dir() . '/kiss-test-loader-json-' . uniqid() . '.json';
+        file_put_contents($path, '"data"');
+
+        $loader = new JsonLoader($path);
+        $loader->load();
+        $this->assertSame($path, $loader->filePath());
+        $this->assertSame('data', $loader->content());
+
+        unlink($path);
+    }
+
+    public function testYamlLoaderPublicMethods()
+    {
+        $path = sys_get_temp_dir() . '/kiss-test-loader-yaml-' . uniqid() . '.yml';
+        file_put_contents($path, 'data');
+
+        $loader = new YamlLoader($path);
+        $loader->load();
+        $this->assertSame($path, $loader->filePath());
+        $this->assertSame('data', $loader->content());
+
+        unlink($path);
     }
 }

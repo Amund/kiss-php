@@ -14,9 +14,9 @@ class DataSource
     public mixed $content;
     public string $filePath;
 
-    const TYPES = ['php', 'json', 'yaml'];
-    const INLINE = 6;
-    const INDENT = 2;
+    public const TYPES = ['php', 'json', 'yaml'];
+    public const INLINE = 6;
+    public const INDENT = 2;
 
     public function __construct(string $filePath)
     {

@@ -100,7 +100,8 @@ class Kiss
         $description =
             'Kiss is another static site generator, written in php.' .
             'It uses Twig as a templating system and automatically generates image thumbnails.' .
-            'It supports yaml, json or php data sources, from local or remote files, maximizing the use of local caches to speed up website building in case of modifications.';
+            'It supports yaml, json or php data sources, from local or remote files,' .
+            ' maximizing the use of local caches to speed up website building in case of modifications.';
         $this->log
             ->line(Log::color('white bold', 'DESCRIPTION'))
             ->line('────────────────────')
@@ -376,7 +377,7 @@ class Kiss
             $fs->remove($path);
         }
         if ($arg === 'all' || $arg === 'cache') {
-            $path = $this->config['path']['cache'] . '/kiss';
+            $path = $this->config['path']['cache'];
             $fs->remove($path);
         }
 

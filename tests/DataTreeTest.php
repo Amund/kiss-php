@@ -179,4 +179,25 @@ final class DataTreeTest extends TestCase
 
         $this->assertNotEquals($get, $getNew);
     }
+
+    public function testClearMustRemoveCacheDirectory()
+    {
+        $fixturesDir = sys_get_temp_dir() . '/kiss-test-dt-clear-' . uniqid();
+        mkdir($fixturesDir, 0777, true);
+        file_put_contents(
+            $fixturesDir . '/data.php',
+            '<?php return "test";'
+        );
+
+        $this->tree->resolve(['$ref' => $fixturesDir . '/data.php']);
+
+        $cacheDir = sys_get_temp_dir() . '/kiss-test-datatree';
+        $this->assertDirectoryExists($cacheDir);
+
+        $this->tree->clear();
+        $this->assertDirectoryDoesNotExist($cacheDir);
+
+        array_map('unlink', glob($fixturesDir . '/*'));
+        rmdir($fixturesDir);
+    }
 }

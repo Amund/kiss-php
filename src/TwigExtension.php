@@ -17,7 +17,7 @@ class TwigExtension extends AbstractExtension
         return [
             new TwigFunction(
                 'dump',
-                [$this, 'twig_var_dump'],
+                [$this, 'twigVarDump'],
                 [
                     'is_safe' => ['html'],
                     'needs_context' => true,
@@ -28,7 +28,7 @@ class TwigExtension extends AbstractExtension
         ];
     }
 
-    function twig_var_dump(Environment $env, $context, ...$vars)
+    public function twigVarDump(Environment $env, $context, ...$vars)
     {
         if (!$env->isDebug()) {
             return;

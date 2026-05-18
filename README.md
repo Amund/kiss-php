@@ -60,6 +60,17 @@ data:
 
 On full rebuild, the route manifest tracks all generated HTML files. If a route is removed or a data source stops producing a page, the stale file is automatically cleaned from `web/`.
 
+### Data sources: static and dynamic
+
+Data files can be **static** (YAML, JSON) or **dynamic** (PHP). PHP data files are executed on each load via `require`, giving them access to the full PHP runtime — databases, external APIs, or any computation:
+
+```php
+<?php // data/posts.php
+return $db->query('SELECT * FROM posts')->fetchAll();
+```
+
+Combined with the DataTree cache, the result of the PHP file is cached on first run and served from OPcache on subsequent builds. This offers the flexibility of dynamic data with the speed of static caching.
+
 ### CLI
 
 ```

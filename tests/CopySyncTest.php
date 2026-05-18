@@ -126,6 +126,40 @@ final class CopySyncTest extends TestCase
         $this->assertSame([], $files);
     }
 
+    public function testLoadExistingManifest()
+    {
+        file_put_contents($this->sourceDir . '/a.txt', 'aaa');
+        $this->sync->sync($this->sourceDir, $this->destDir);
+
+        $sync2 = new CopySync($this->cacheDir);
+        $sync2->sync($this->sourceDir, $this->destDir);
+
+        $this->assertFileExists($this->destDir . '/a.txt');
+    }
+
+    public function testSyncFileWithUnchangedContentSkipsCopy()
+    {
+        file_put_contents($this->sourceDir . '/a.txt', 'aaa');
+        $this->sync->syncFile($this->sourceDir, $this->destDir, 'a.txt');
+        $mtime = filemtime($this->destDir . '/a.txt');
+        sleep(1);
+
+        $this->sync->syncFile($this->sourceDir, $this->destDir, 'a.txt');
+        $this->assertSame($mtime, filemtime($this->destDir . '/a.txt'));
+    }
+
+    public function testSyncFileWithNonExistentSourceDoesNothing()
+    {
+        $this->sync->syncFile($this->sourceDir, $this->destDir, 'nonexistent.txt');
+        $this->assertFileDoesNotExist($this->destDir . '/nonexistent.txt');
+    }
+
+    public function testRemoveFileWithNonExistentEntryDoesNothing()
+    {
+        $this->sync->removeFile($this->destDir, 'nonexistent.txt');
+        $this->assertFileDoesNotExist($this->destDir . '/nonexistent.txt');
+    }
+
     private function rmDir(string $dir): void
     {
         if (!is_dir($dir)) {

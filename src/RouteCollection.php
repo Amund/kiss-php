@@ -9,7 +9,7 @@ class RouteCollection
 {
     private array $routes = [];
 
-    const EXTENSIONS = ['yml', 'yaml', 'json', 'php'];
+    public const EXTENSIONS = ['yml', 'yaml', 'json', 'php'];
 
     public function __construct(string $directory)
     {

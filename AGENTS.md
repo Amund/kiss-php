@@ -30,3 +30,4 @@
 
 ## Remaining (from TODO.md)
 - Image thumbnails from Twig function (not started)
+- DataTree: option to skip caching for certain PHP files (e.g., `-no-cache.php` suffix) so they are re-evaluated on each resolve, preserving access to dynamic context (`$args`, etc.)

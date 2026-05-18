@@ -15,7 +15,7 @@ class Route
     public string $template;
     public mixed $data;
 
-    const SCHEMA = <<<'JSON'
+    public const SCHEMA = <<<'JSON'
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
@@ -38,7 +38,7 @@ class Route
 }
 JSON;
 
-    const PARAMS_MATCHER = '#{([^}]+)}#';
+    public const PARAMS_MATCHER = '#{([^}]+)}#';
 
     public function __construct(string $name, DataSource $datasource)
     {

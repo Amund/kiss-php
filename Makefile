@@ -31,18 +31,10 @@ logs:
 
 
 ## OUTILS COURANTS
-.PHONY: composer npm npx gulp deno kiss tests test phpcs
+.PHONY: composer kiss tests test phpcs coverage
 
 composer:
 	@docker compose exec app composer $(filter-out $@,$(MAKECMDGOALS)) || true
-npm:
-	@docker compose exec app npm $(filter-out $@,$(MAKECMDGOALS)) || true
-npx:
-	@docker compose exec app npx $(filter-out $@,$(MAKECMDGOALS)) || true
-gulp:
-	@docker compose exec app gulp $(filter-out $@,$(MAKECMDGOALS)) || true
-deno:
-	@docker compose exec app deno $(filter-out $@,$(MAKECMDGOALS)) || true
 kiss:
 	@docker compose exec app src/bin/kiss $(filter-out $@,$(MAKECMDGOALS)) || true
 tests:
@@ -51,6 +43,10 @@ test:
 	@docker compose exec app vendor/bin/phpunit $(filter-out $@,$(MAKECMDGOALS)) || true
 phpcs:
 	@docker compose exec app vendor/bin/phpcs $(filter-out $@,$(MAKECMDGOALS)) || true
+coverage:
+	@rm -rf coverage
+	@docker compose exec app vendor/bin/phpunit 2>&1 | tail -5
+	@echo "Report: coverage/index.html"
 
 %:
 	@:
