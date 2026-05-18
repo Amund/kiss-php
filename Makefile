@@ -44,7 +44,7 @@ gulp:
 deno:
 	@docker compose exec app deno $(filter-out $@,$(MAKECMDGOALS)) || true
 kiss:
-	@docker compose exec app engine/bin/kiss $(filter-out $@,$(MAKECMDGOALS)) || true
+	@docker compose exec app src/bin/kiss $(filter-out $@,$(MAKECMDGOALS)) || true
 tests:
 	@docker compose exec app vendor/bin/phpunit || true
 test:

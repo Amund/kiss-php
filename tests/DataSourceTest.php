@@ -91,4 +91,87 @@ final class DataSourceTest extends TestCase
 
         $ds = new DataSource($path);
     }
+
+    public function testSavePhp()
+    {
+        $path = sys_get_temp_dir() . '/kiss-test-save-php-' . uniqid() . '.php';
+
+        DataSource::savePhp($path, ['foo' => 'bar']);
+        $this->assertFileExists($path);
+
+        $content = file_get_contents($path);
+        $this->assertStringContainsString('<?php', $content);
+        $this->assertStringContainsString("'foo' => 'bar'", $content);
+
+        $loaded = require $path;
+        $this->assertEquals(['foo' => 'bar'], $loaded);
+
+        unlink($path);
+    }
+
+    public function testSavePhpWithSource()
+    {
+        $path = sys_get_temp_dir() . '/kiss-test-save-php-src-' . uniqid() . '.php';
+
+        DataSource::savePhp($path, 'hello', 'data/test.yml');
+        $content = file_get_contents($path);
+        $this->assertStringContainsString('// data/test.yml', $content);
+
+        unlink($path);
+    }
+
+    public function testSaveYaml()
+    {
+        $path = sys_get_temp_dir() . '/kiss-test-save-yaml-' . uniqid() . '.yml';
+
+        DataSource::saveYaml($path, ['foo' => 'bar', 'list' => [1, 2]]);
+        $this->assertFileExists($path);
+
+        $loaded = \Symfony\Component\Yaml\Yaml::parseFile($path);
+        $this->assertEquals(['foo' => 'bar', 'list' => [1, 2]], $loaded);
+
+        unlink($path);
+    }
+
+    public function testSaveJson()
+    {
+        $path = sys_get_temp_dir() . '/kiss-test-save-json-' . uniqid() . '.json';
+
+        DataSource::saveJson($path, ['foo' => 'bar']);
+        $this->assertFileExists($path);
+
+        $loaded = json_decode(file_get_contents($path), true);
+        $this->assertEquals(['foo' => 'bar'], $loaded);
+
+        unlink($path);
+    }
+
+    public function testSaveInstanceWritesToOriginalPath()
+    {
+        $srcPath = sys_get_temp_dir() . '/kiss-test-save-instance-' . uniqid() . '.json';
+        file_put_contents($srcPath, '"original"');
+
+        $ds = new DataSource($srcPath);
+        $ds->save('modified');
+
+        $this->assertStringEqualsFile($srcPath, "\"modified\"\n");
+
+        unlink($srcPath);
+    }
+
+    public function testSaveInstanceWithCustomPath()
+    {
+        $srcPath = sys_get_temp_dir() . '/kiss-test-save-custom-src-' . uniqid() . '.json';
+        $dstPath = sys_get_temp_dir() . '/kiss-test-save-custom-dst-' . uniqid() . '.yml';
+        file_put_contents($srcPath, '"original"');
+
+        $ds = new DataSource($srcPath);
+        $ds->save(['key' => 'value'], $dstPath);
+
+        $loaded = \Symfony\Component\Yaml\Yaml::parseFile($dstPath);
+        $this->assertEquals(['key' => 'value'], $loaded);
+
+        unlink($srcPath);
+        unlink($dstPath);
+    }
 }

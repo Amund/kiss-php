@@ -2,12 +2,12 @@
 
 namespace Kiss;
 
-/*
- * - Load a route from a datasource.
- * - Resolve schema
- * - Resolve datatree
- * - Check datatree validity from schema
- */
+use Kiss\DataSource;
+use Kiss\DataTree;
+use Kiss\KissException;
+use Opis\JsonSchema\Validator;
+use Opis\JsonSchema\Errors\ErrorFormatter;
+
 class Route
 {
     public string $name;
@@ -15,131 +15,140 @@ class Route
     public string $template;
     public mixed $data;
 
-    public string $test = <<<JSON
+    const SCHEMA = <<<'JSON'
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "http://kiss.io/route.json",
     "type": "object",
     "properties": {
+        "type": {
+            "type": "string",
+            "minLength": 1
+        },
+        "path": {
+            "type": "string",
+            "minLength": 1
+        },
+        "template": {
+            "type": "string",
+            "minLength": 1
+        }
     },
-    "required": ["type", "path", "template", "data"],
-    "additionalProperties": false
+    "required": ["type", "path", "template"],
+    "additionalProperties": true
 }
 JSON;
 
     const PARAMS_MATCHER = '#{([^}]+)}#';
-    public function __construct(DataSource $datasource)
+
+    public function __construct(string $name, DataSource $datasource)
     {
+        $this->name = $name;
+        $content = $datasource->content;
+
+        if (is_array($content)) {
+            $content = (object) $content;
+        }
+
+        $validator = new Validator();
+        $result = $validator->validate($content, self::SCHEMA);
+
+        if (!$result->isValid()) {
+            $errors = (new ErrorFormatter())->format($result->error());
+            $first = reset($errors);
+            $this->error(
+                'Route "{name}" validation error: {message}',
+                ['{name}' => $name, '{message}' => $first[0] ?? 'invalid']
+            );
+        }
+
+        $path = $content->path;
+
+        if (!str_starts_with($path, '/')) {
+            $this->error(
+                'Route "{name}" path must start with a slash ("/")',
+                ['{name}' => $name]
+            );
+        }
+        if (str_ends_with($path, '/')) {
+            $this->error(
+                'Route "{name}" path must not end with a slash ("/")',
+                ['{name}' => $name]
+            );
+        }
+        if (!preg_match('#^[-a-z0-9_{}/.]+$#i', $path)) {
+            $this->error(
+                'Route "{name}" path only accepts "a-z", "0-9", "-", "_", "{", "}", "/", "."',
+                ['{name}' => $name]
+            );
+        }
+
+        $this->path = $path;
+        $this->template = $content->template;
+        $this->data = $content->data ?? null;
     }
 
-    // public function __construct(string $name, array $route)
-    // {
-    //     if (!is_array($route)) {
-    //         $this->error('Route "{name}" is not an array', ['{name}' => $name]);
-    //     }
-    //     if (!\array_key_exists('path', $route)) {
-    //         $this->error('Missing path in "{name}" route', ['{name}' => $name]);
-    //     }
-    //     if (!\str_starts_with($route['path'], '/')) {
-    //         $this->error(
-    //             'Invalid path in "{name}" route, it must starts with a slash ("/")',
-    //             ['{name}' => $name]
-    //         );
-    //     }
-    //     if (\str_ends_with($route['path'], '/')) {
-    //         $this->error(
-    //             'Invalid path in "{name}" route, it must not ends with a slash ("/")',
-    //             ['{name}' => $name]
-    //         );
-    //     }
-    //     if (
-    //         !is_string($route['path']) ||
-    //         !\preg_match('#[0-9a-z-{}/]+#', $route['path'])
-    //     ) {
-    //         $this->error(
-    //             'Invalid path in "{name}" route, it only accept "a-z", "0-9", "-", "{", "}", "/")',
-    //             ['{name}' => $name]
-    //         );
-    //     }
-    //     if (!\array_key_exists('template', $route)) {
-    //         $this->error('Missing path in "{name}" route', ['{name}' => $name]);
-    //     }
-    //     if (
-    //         !is_string($route['template']) ||
-    //         !\preg_match('#[0-9a-z-/]+#', $route['path'])
-    //     ) {
-    //         $this->error('Invalid path in "{name}" route', ['{name}' => $name]);
-    //     }
-
-    //     $this->name = $name;
-    //     $this->path = $route['path'];
-    //     $this->template = $route['template'];
-    //     $this->data = &$route['data'] ?? null;
-    // }
-
-    // public function getPages()
-    // {
-    //     // $this->path = '/blog/{category}/{id}-{slug}';
-    //     // grab parameters from path
-    //     preg_match_all(
-    //         self::PARAMS_MATCHER,
-    //         $this->path,
-    //         $params,
-    //         PREG_SET_ORDER
-    //     );
-    //     $params = array_combine(
-    //         array_column($params, 0),
-    //         array_column($params, 1)
-    //     );
-
-    //     $pages = [];
-    //     $path = ltrim($this->path, '/');
-    //     if (count($params) === 0) {
-    //         // no params, only one page
-    //         $pages[$path] = &$this->data;
-    //     } else {
-    //         // there are parameters, need an array of array as data
-    //         if (!is_array($this->data)) {
-    //             $message =
-    //                 'Route "{name}" has parameters ("{params}") in its path, its data must be a collection of arrays, each containing these parameters as keys';
-    //             $this->error($message, [
-    //                 '{name}' => $this->name,
-    //                 '{params}' => implode('", "', $params),
-    //             ]);
-    //         }
-    //         foreach ($this->data as $index => $data) {
-    //             $file = $path;
-    //             if (!is_array($data)) {
-    //                 $message =
-    //                     'Route "{name}" has parameters ("{params}") in its path, its data[{index}] must be an array containing these params as keys';
-    //                 $this->error($message, [
-    //                     '{name}' => $this->name,
-    //                     '{params}' => implode('", "', $params),
-    //                     '{index}' => $index,
-    //                 ]);
-    //             }
-    //             foreach ($params as $param => $key) {
-    //                 if (!\array_key_exists($key, $data)) {
-    //                     $message =
-    //                         'Route "{name}" has a parameter "{param}" in its path, its data[{index}]["{key}"] must exists';
-    //                     $this->error($message, [
-    //                         '{name}' => $this->name,
-    //                         '{param}' => $param,
-    //                         '{key}' => $key,
-    //                         '{index}' => $index,
-    //                     ]);
-    //                 } else {
-    //                     $file = strtr($file, [$param => $data[$key]]);
-    //                 }
-    //             }
-    //             $pages[$file] = $data;
-    //         }
-    //     }
-    //     return $pages;
-    // }
-
-    private function error(string $str, array $vars = [])
+    public function getPages(?DataTree $tree = null): array
     {
-        throw new KissException(strtr($str, $vars));
+        $data = $this->data;
+        if ($tree !== null && $data !== null) {
+            $data = $tree->resolve($data);
+        }
+
+        preg_match_all(self::PARAMS_MATCHER, $this->path, $matches, PREG_SET_ORDER);
+        $params = [];
+        foreach ($matches as $match) {
+            $params[$match[0]] = $match[1];
+        }
+
+        $relativePath = ltrim($this->path, '/');
+        $pages = [];
+
+        if (count($params) === 0) {
+            $pages[$relativePath] = $data;
+        } else {
+            if (!is_array($data)) {
+                $this->error(
+                    'Route "{name}" has parameters ("{params}") in its path, its data must be a collection of arrays',
+                    [
+                        '{name}' => $this->name,
+                        '{params}' => implode('", "', $params),
+                    ]
+                );
+            }
+            foreach ($data as $index => $item) {
+                if (!is_array($item)) {
+                    $this->error(
+                        'Route "{name}" has parameters in its path, its data[{index}] must be an array',
+                        ['{name}' => $this->name, '{index}' => $index]
+                    );
+                }
+                $file = $relativePath;
+                foreach ($params as $placeholder => $key) {
+                    if (!array_key_exists($key, $item)) {
+                        $this->error(
+                            'Route "{name}" has parameter "{param}" in its path, but data[{index}]["{key}"] is missing',
+                            [
+                                '{name}' => $this->name,
+                                '{param}' => $key,
+                                '{index}' => $index,
+                                '{key}' => $key,
+                            ]
+                        );
+                    }
+                    $file = strtr($file, [$placeholder => $item[$key]]);
+                }
+                $pages[$file] = $item;
+            }
+        }
+
+        return $pages;
+    }
+
+    private function error(
+        string $str,
+        ?array $args = [],
+        ?\Throwable $previous = null
+    ) {
+        throw new KissException(strtr($str, $args), 0, $previous);
     }
 }

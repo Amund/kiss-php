@@ -2,16 +2,11 @@
 
 namespace Kiss;
 
-use Kiss\KissException;
 use Kiss\DataSource\AbstractLoader;
 use Kiss\DataSource\PhpLoader;
 use Kiss\DataSource\JsonLoader;
 use Kiss\DataSource\YamlLoader;
-
-/**
- * The `DataSource` class provides methods to load and save data from different file formats such as
- * PHP, JSON, and YAML.
- */
+use Symfony\Component\Yaml\Yaml;
 
 class DataSource
 {
@@ -20,6 +15,8 @@ class DataSource
     public string $filePath;
 
     const TYPES = ['php', 'json', 'yaml'];
+    const INLINE = 6;
+    const INDENT = 2;
 
     public function __construct(string $filePath)
     {
@@ -42,33 +39,44 @@ class DataSource
         $this->content = $this->loader->load();
     }
 
-    /**
-     * The function `create` creates a new `DataSource` object based on the provided file path and
-     * extension.
-     *
-     * @param string $filePath The `filePath` parameter is a string that represents the path to the file that
-     * needs to be loaded or saved.
-     *
-     * @throws KissException if the file extension is not one of the supported extensions
-     *
-     * @return AbstractDataSource an instance of the `AbstractDataSource` class
-     */
-    // public static function create(string $filePath): AbstractDataSource
-    // {
-    //     $extension = pathinfo($filePath, PATHINFO_EXTENSION);
-    //     $extension = strtolower($extension);
-    //     match ($extension) {
-    //         'php' => ($instance = new PhpDataSource($filePath)),
-    //         'json' => ($instance = new JsonDataSource($filePath)),
-    //         'yaml', 'yml' => ($instance = new YamlDataSource($filePath)),
-    //         default => throw new KissException(
-    //             strtr('"{path}" is not a valid DataSource format ({types})', [
-    //                 '{path}' => $filePath,
-    //                 '{types}' => implode(', ', self::TYPES),
-    //             ])
-    //         ),
-    //     };
+    public function save(mixed $content = null, ?string $filePath = null): void
+    {
+        $content = $content ?? $this->content;
+        $path = $filePath ?? $this->filePath;
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
 
-    //     return $instance;
-    // }
+        match ($extension) {
+            'php' => self::savePhp($path, $content),
+            'yaml', 'yml' => self::saveYaml($path, $content),
+            'json' => self::saveJson($path, $content),
+            default => throw new KissException(
+                strtr('"{path}" is not a valid DataSource format ({types})', [
+                    '{path}' => $path,
+                    '{types}' => implode(', ', self::TYPES),
+                ])
+            ),
+        };
+    }
+
+    public static function savePhp(string $path, mixed $content, ?string $source = null): void
+    {
+        $php = '<?php';
+        if ($source !== null) {
+            $php .= ' // ' . $source;
+        }
+        $php .= "\n\nreturn " . var_export($content, true) . ";\n";
+        file_put_contents($path, $php);
+    }
+
+    public static function saveYaml(string $path, mixed $content): void
+    {
+        $yaml = Yaml::dump($content, self::INLINE, self::INDENT);
+        file_put_contents($path, $yaml);
+    }
+
+    public static function saveJson(string $path, mixed $content): void
+    {
+        $json = json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
+        file_put_contents($path, $json);
+    }
 }

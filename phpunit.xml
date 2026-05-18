@@ -25,7 +25,7 @@
 
     <!-- <coverage
         includeUncoveredFiles="true"
-        pathCoverage="true"
+        pathCoverage="false"
         ignoreDeprecatedCodeUnits="false"
         disableCodeCoverageIgnore="false">
         <report>

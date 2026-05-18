@@ -1,8 +1,6 @@
 /vendor
-!/vendor/kiss
 /web
 /tmp
-/node_modules
 /coverage
 /.env
 /doc

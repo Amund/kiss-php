@@ -65,20 +65,12 @@ SH
                 ->copy($arg);
             break;
 
-        case 'scss':
+        case 'route':
             $arg = $argv[2] ?? 'all';
             $kiss
                 ->version()
                 ->warmup()
-                ->scss($arg);
-            break;
-
-        case 'route':
-            $kiss
-                ->version()
-                ->warmup()
-                // ->data()
-                ->route();
+                ->route($arg);
             break;
 
         case 'img':
