@@ -6,6 +6,8 @@ use PHPUnit\Framework\TestCase;
 
 final class CopySyncTest extends TestCase
 {
+    use RmDirTrait;
+
     private string $sourceDir;
     private string $destDir;
     private string $cacheDir;
@@ -158,20 +160,5 @@ final class CopySyncTest extends TestCase
     {
         $this->sync->removeFile($this->destDir, 'nonexistent.txt');
         $this->assertFileDoesNotExist($this->destDir . '/nonexistent.txt');
-    }
-
-    private function rmDir(string $dir): void
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-        $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
-        );
-        foreach ($files as $file) {
-            $file->isDir() ? rmdir($file->getPathname()) : unlink($file->getPathname());
-        }
-        rmdir($dir);
     }
 }

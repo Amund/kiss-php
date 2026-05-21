@@ -1,6 +1,8 @@
+/copy
+/coverage
+/data
+/route
+/template
 /vendor
 /web
-/tmp
-/coverage
 /.env
-/doc

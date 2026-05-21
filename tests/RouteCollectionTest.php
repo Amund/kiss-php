@@ -29,11 +29,11 @@ final class RouteCollectionTest extends TestCase
     {
         file_put_contents(
             $this->tempDir . '/blog.yml',
-            "type: blog\npath: /blog/{slug}.html\ntemplate: blog.twig\ndata:\n  - slug: hello\n"
+            "path: /blog/{slug}.html\ntemplate: blog.twig\ndata:\n  - slug: hello\n"
         );
         file_put_contents(
             $this->tempDir . '/about.yml',
-            "type: page\npath: /about\ntemplate: page.twig\n"
+            "path: /about\ntemplate: page.twig\n"
         );
 
         $collection = new RouteCollection($this->tempDir);
@@ -52,7 +52,7 @@ final class RouteCollectionTest extends TestCase
     {
         file_put_contents(
             $this->tempDir . '/blog.json',
-            '{"type":"blog","path":"/blog/{slug}.html","template":"blog.twig"}'
+            '{"path":"/blog/{slug}.html","template":"blog.twig"}'
         );
 
         $collection = new RouteCollection($this->tempDir);
@@ -64,7 +64,7 @@ final class RouteCollectionTest extends TestCase
     {
         file_put_contents(
             $this->tempDir . '/blog.php',
-            '<?php return ["type"=>"blog","path"=>"/blog/{slug}.html","template"=>"blog.twig"];'
+            '<?php return ["path"=>"/blog/{slug}.html","template"=>"blog.twig"];'
         );
 
         $collection = new RouteCollection($this->tempDir);
@@ -76,15 +76,15 @@ final class RouteCollectionTest extends TestCase
     {
         file_put_contents(
             $this->tempDir . '/a.yml',
-            "type: a\npath: /a\ntemplate: a.twig\n"
+            "path: /a\ntemplate: a.twig\n"
         );
         file_put_contents(
             $this->tempDir . '/b.json',
-            '{"type":"b","path":"/b","template":"b.twig"}'
+            '{"path":"/b","template":"b.twig"}'
         );
         file_put_contents(
             $this->tempDir . '/c.php',
-            '<?php return ["type"=>"c","path"=>"/c","template"=>"c.twig"];'
+            '<?php return ["path"=>"/c","template"=>"c.twig"];'
         );
 
         $collection = new RouteCollection($this->tempDir);
@@ -99,7 +99,7 @@ final class RouteCollectionTest extends TestCase
 
     public function testNonRouteFilesAreIgnored()
     {
-        file_put_contents($this->tempDir . '/blog.yml', "type: blog\npath: /blog\ntemplate: blog.twig\n");
+        file_put_contents($this->tempDir . '/blog.yml', "path: /blog\ntemplate: blog.twig\n");
         file_put_contents($this->tempDir . '.DS_Store', '');
         file_put_contents($this->tempDir . '/readme.md', '# readme');
 
@@ -112,7 +112,7 @@ final class RouteCollectionTest extends TestCase
     {
         file_put_contents(
             $this->tempDir . '/blog.yml',
-            "type: blog\npath: /blog\ntemplate: blog.twig\n"
+            "path: /blog\ntemplate: blog.twig\n"
         );
 
         $collection = new RouteCollection($this->tempDir);
@@ -125,7 +125,7 @@ final class RouteCollectionTest extends TestCase
 
         file_put_contents(
             $this->tempDir . '/bad.yml',
-            "type: blog\n"
+            "path: /blog\n"
         );
 
         new RouteCollection($this->tempDir);

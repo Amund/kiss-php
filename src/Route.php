@@ -10,6 +10,8 @@ use Opis\JsonSchema\Errors\ErrorFormatter;
 
 class Route
 {
+    use Thrower;
+
     public string $name;
     public string $path;
     public string $template;
@@ -20,10 +22,6 @@ class Route
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "properties": {
-        "type": {
-            "type": "string",
-            "minLength": 1
-        },
         "path": {
             "type": "string",
             "minLength": 1
@@ -33,7 +31,7 @@ class Route
             "minLength": 1
         }
     },
-    "required": ["type", "path", "template"],
+    "required": ["path", "template"],
     "additionalProperties": true
 }
 JSON;
@@ -56,8 +54,8 @@ JSON;
             $errors = (new ErrorFormatter())->format($result->error());
             $first = reset($errors);
             $this->error(
-                'Route "{name}" validation error: {message}',
-                ['{name}' => $name, '{message}' => $first[0] ?? 'invalid']
+                'validation error: {message}',
+                ['{message}' => $first[0] ?? 'invalid']
             );
         }
 
@@ -65,20 +63,17 @@ JSON;
 
         if (!str_starts_with($path, '/')) {
             $this->error(
-                'Route "{name}" path must start with a slash ("/")',
-                ['{name}' => $name]
+                'path must start with a slash ("/")'
             );
         }
         if (str_ends_with($path, '/')) {
             $this->error(
-                'Route "{name}" path must not end with a slash ("/")',
-                ['{name}' => $name]
+                'path must not end with a slash ("/")'
             );
         }
         if (!preg_match('#^[-a-z0-9_{}/.]+$#i', $path)) {
             $this->error(
-                'Route "{name}" path only accepts "a-z", "0-9", "-", "_", "{", "}", "/", "."',
-                ['{name}' => $name]
+                'path only accepts "a-z", "0-9", "-", "_", "{", "}", "/", "."'
             );
         }
 
@@ -108,9 +103,8 @@ JSON;
         } else {
             if (!is_array($data)) {
                 $this->error(
-                    'Route "{name}" has parameters ("{params}") in its path, its data must be a collection of arrays',
+                    'data must be an array of arrays (parameters: {params})',
                     [
-                        '{name}' => $this->name,
                         '{params}' => implode('", "', $params),
                     ]
                 );
@@ -118,37 +112,27 @@ JSON;
             foreach ($data as $index => $item) {
                 if (!is_array($item)) {
                     $this->error(
-                        'Route "{name}" has parameters in its path, its data[{index}] must be an array',
-                        ['{name}' => $this->name, '{index}' => $index]
+                        'data[{index}] must be an array',
+                        ['{index}' => $index]
                     );
                 }
                 $file = $relativePath;
                 foreach ($params as $placeholder => $key) {
                     if (!array_key_exists($key, $item)) {
                         $this->error(
-                            'Route "{name}" has parameter "{param}" in its path, but data[{index}]["{key}"] is missing',
+                            'data[{index}] is missing parameter "{key}"',
                             [
-                                '{name}' => $this->name,
-                                '{param}' => $key,
                                 '{index}' => $index,
                                 '{key}' => $key,
                             ]
                         );
                     }
-                    $file = strtr($file, [$placeholder => $item[$key]]);
+                    $file = strtr($file, [$placeholder => Tools::slugify($item[$key])]);
                 }
                 $pages[$file] = $item;
             }
         }
 
         return $pages;
-    }
-
-    private function error(
-        string $str,
-        ?array $args = [],
-        ?\Throwable $previous = null
-    ) {
-        throw new KissException(strtr($str, $args), 0, $previous);
     }
 }

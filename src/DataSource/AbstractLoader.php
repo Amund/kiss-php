@@ -8,8 +8,10 @@ use Kiss\KissException;
  * The `AbstractDataSource` class is an abstract class that provides common functionality for
  * `DataSource` classes.
  */
-abstract class AbstractLoader
+abstract class AbstractLoader implements LoaderInterface
 {
+    use \Kiss\Thrower;
+
     protected ?string $filePath = null;
     protected mixed $content = null;
 
@@ -23,7 +25,7 @@ abstract class AbstractLoader
     protected function __construct(string $filePath)
     {
         if (!\is_file($filePath)) {
-            self::error('DataSource "{path}" not found', [
+            $this->error('DataSource "{path}" not found', [
                 '{path}' => $filePath,
             ]);
         }
@@ -56,22 +58,5 @@ abstract class AbstractLoader
     public function content(): mixed
     {
         return $this->content;
-    }
-
-    /**
-     * Throw a `KissException`.
-     *
-     * @param string $str The error message, containing placeholders
-     * @param array|null $args Variables to interpolate in the message
-     * @param \Throwable|null $previous Previous exception
-     * @throws KissException description of exception
-     * @return void
-     */
-    protected function error(
-        string $str,
-        ?array $args = [],
-        ?\Throwable $previous = null
-    ): void {
-        throw new KissException(strtr($str, $args), 0, $previous);
     }
 }

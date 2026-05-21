@@ -1,0 +1,14 @@
+path:
+  copy: copy
+  data: data
+  route: route
+  template: template
+  dist: web
+  cache: tmp
+log:
+  verbose: false
+  color:
+    path: yellow
+    duration: 'green dim'
+    error: red
+debug: false

@@ -23,7 +23,6 @@ final class RouteTest extends TestCase
     {
         $ds = $this->createStub(DataSource::class);
         $ds->content = (object) [
-            'type' => 'page',
             'path' => '/test.html',
             'template' => 'test',
             'data' => 'my-data',
@@ -40,26 +39,12 @@ final class RouteTest extends TestCase
     {
         $ds = $this->createStub(DataSource::class);
         $ds->content = (object) [
-            'type' => 'page',
             'path' => '/test.html',
             'template' => 'test',
         ];
 
         $route = new Route('test', $ds);
         $this->assertNull($route->data);
-    }
-
-    public function testMissingTypeMustThrowException()
-    {
-        $this->expectException(KissException::class);
-
-        $ds = $this->createStub(DataSource::class);
-        $ds->content = (object) [
-            'path' => '/test.html',
-            'template' => 'test',
-        ];
-
-        new Route('test', $ds);
     }
 
     public function testMissingPathMustThrowException()
@@ -81,7 +66,6 @@ final class RouteTest extends TestCase
 
         $ds = $this->createStub(DataSource::class);
         $ds->content = (object) [
-            'type' => 'page',
             'path' => '/test.html',
         ];
 
@@ -92,7 +76,6 @@ final class RouteTest extends TestCase
     {
         $ds = $this->createStub(DataSource::class);
         $ds->content = (object) [
-            'type' => 'page',
             'path' => '/foo/bar/baz.html',
             'template' => 'my-template',
             'data' => 'my-data',
@@ -107,7 +90,6 @@ final class RouteTest extends TestCase
     {
         $ds = $this->createStub(DataSource::class);
         $ds->content = (object) [
-            'type' => 'page',
             'path' => '/{a}.html',
             'template' => 'my-template',
             'data' => [['a' => '1'], ['a' => '2'], ['a' => '3']],
@@ -126,7 +108,6 @@ final class RouteTest extends TestCase
     {
         $ds = $this->createStub(DataSource::class);
         $ds->content = (object) [
-            'type' => 'page',
             'path' => '/{category}/{slug}-{id}.html',
             'template' => 'my-template',
             'data' => [
@@ -175,7 +156,6 @@ final class RouteTest extends TestCase
 
         $ds = $this->createStub(DataSource::class);
         $ds->content = (object) [
-            'type' => 'page',
             'path' => '/{a}.html',
             'template' => 'my-template',
             'data' => ['$ref' => $fixturesDir . '/data.php'],
@@ -199,7 +179,6 @@ final class RouteTest extends TestCase
 
         $ds = $this->createStub(DataSource::class);
         $ds->content = (object) [
-            'type' => 'page',
             'path' => '/{a}.html',
             'template' => 'my-template',
             'data' => 'not-an-array',
@@ -215,7 +194,6 @@ final class RouteTest extends TestCase
 
         $ds = $this->createStub(DataSource::class);
         $ds->content = (object) [
-            'type' => 'page',
             'path' => '/{a}.html',
             'template' => 'my-template',
             'data' => ['not-an-array'],
@@ -231,7 +209,6 @@ final class RouteTest extends TestCase
 
         $ds = $this->createStub(DataSource::class);
         $ds->content = (object) [
-            'type' => 'page',
             'path' => '/{a}.html',
             'template' => 'my-template',
             'data' => [['b' => '1']],
@@ -247,7 +224,6 @@ final class RouteTest extends TestCase
 
         $ds = $this->createStub(DataSource::class);
         $ds->content = (object) [
-            'type' => 'page',
             'path' => 'no-leading-slash.html',
             'template' => 'tpl',
         ];
@@ -261,7 +237,6 @@ final class RouteTest extends TestCase
 
         $ds = $this->createStub(DataSource::class);
         $ds->content = (object) [
-            'type' => 'page',
             'path' => '/trailing-slash/',
             'template' => 'tpl',
         ];
@@ -275,7 +250,6 @@ final class RouteTest extends TestCase
 
         $ds = $this->createStub(DataSource::class);
         $ds->content = (object) [
-            'type' => 'page',
             'path' => '/bad chars.html',
             'template' => 'tpl',
         ];

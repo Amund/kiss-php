@@ -6,6 +6,8 @@ use PHPUnit\Framework\TestCase;
 
 final class KissTest extends TestCase
 {
+    use RmDirTrait;
+
     private $tmpDirs = [];
 
     public function tearDown(): void
@@ -21,7 +23,8 @@ final class KissTest extends TestCase
     public function testConstruct()
     {
         $kiss = new Kiss();
-        $this->assertSame('0.1', $kiss->version);
+        $expected = json_decode(file_get_contents('composer.json'), true)['version'];
+        $this->assertSame($expected, $kiss->getVersion());
         $this->assertSame('kiss.yml', $kiss->entry);
     }
 
@@ -120,6 +123,7 @@ final class KissTest extends TestCase
         $kiss = new Kiss($dir);
         $kiss->config();
         $kiss->warmup();
+        $kiss->log->silent = true;
 
         $dist = $kiss->config['path']['dist'];
         $cache = $kiss->config['path']['cache'];
@@ -149,6 +153,7 @@ final class KissTest extends TestCase
         $kiss = new Kiss($dir);
         $kiss->config();
         $kiss->warmup();
+        $kiss->log->silent = true;
 
         $dist = $kiss->config['path']['dist'];
         $cache = $kiss->config['path']['cache'];
@@ -165,6 +170,7 @@ final class KissTest extends TestCase
         $kiss = new Kiss($dir);
         $kiss->config();
         $kiss->warmup();
+        $kiss->log->silent = true;
 
         $dist = $kiss->config['path']['dist'];
         $cache = $kiss->config['path']['cache'];
@@ -182,6 +188,7 @@ final class KissTest extends TestCase
         $kiss = new Kiss($dir);
         $kiss->config();
         $kiss->warmup();
+        $kiss->log->silent = true;
 
         $this->assertDirectoryExists($kiss->config['path']['copy']);
         $this->assertDirectoryExists($kiss->config['path']['data']);
@@ -191,9 +198,9 @@ final class KissTest extends TestCase
         $this->assertDirectoryExists($kiss->config['path']['template']);
     }
 
-    public function testCopyOutputsOk()
+    public function testCopyOutputsResult()
     {
-        $this->expectOutputRegex('/ok/');
+        $this->expectOutputRegex('/✓/');
 
         $dir = $this->makeTempDir();
         mkdir($dir . '/template', 0777, true);
@@ -210,6 +217,7 @@ final class KissTest extends TestCase
         $kiss = new Kiss($dir);
         $kiss->config();
         $kiss->warmup();
+        $kiss->log->silent = true;
 
         file_put_contents($kiss->config['path']['copy'] . '/test.txt', 'hello');
 
@@ -225,6 +233,7 @@ final class KissTest extends TestCase
         $kiss = new Kiss($dir);
         $kiss->config();
         $kiss->warmup();
+        $kiss->log->silent = true;
 
         file_put_contents($kiss->config['path']['copy'] . '/static.txt', 'static');
 
@@ -254,6 +263,7 @@ final class KissTest extends TestCase
         $kiss = new Kiss($dir);
         $kiss->config();
         $kiss->warmup();
+        $kiss->log->silent = true;
 
         $dataDir = $kiss->config['path']['data'];
         file_put_contents($dataDir . '/test.yaml', "key: value\n");
@@ -296,6 +306,7 @@ final class KissTest extends TestCase
         $kiss = new Kiss($dir);
         $kiss->config();
         $kiss->warmup();
+        $kiss->log->silent = true;
 
         file_put_contents($kiss->config['path']['copy'] . '/single.txt', 'single');
         $kiss->copy('single.txt');
@@ -311,6 +322,7 @@ final class KissTest extends TestCase
         $kiss = new Kiss($dir);
         $kiss->config();
         $kiss->warmup();
+        $kiss->log->silent = true;
 
         file_put_contents($kiss->config['path']['copy'] . '/gone.txt', 'gone');
         $kiss->copy('gone.txt');
@@ -329,6 +341,7 @@ final class KissTest extends TestCase
         $kiss = new Kiss($dir);
         $kiss->config();
         $kiss->warmup();
+        $kiss->log->silent = true;
 
         file_put_contents($kiss->config['path']['copy'] . '/watch.txt', 'watch');
         $kiss->watched($kiss->config['path']['copy'] . '/watch.txt');
@@ -338,7 +351,7 @@ final class KissTest extends TestCase
 
     public function testWatchedWithTemplateDirCallsRoute()
     {
-        $this->expectOutputRegex('/no routes/');
+        $this->expectOutputRegex('/no matching routes/');
 
         $dir = $this->makeTempDir();
         mkdir($dir . '/template', 0777, true);
@@ -356,6 +369,7 @@ final class KissTest extends TestCase
         $kiss = new Kiss($dir);
         $kiss->config();
         $kiss->warmup();
+        $kiss->log->silent = true;
 
         file_put_contents($kiss->config['path']['copy'] . '/built.txt', 'built');
         $kiss->watched('kiss.yml');
@@ -372,11 +386,11 @@ final class KissTest extends TestCase
         $kiss = new Kiss($dir);
         $kiss->config();
         $kiss->warmup();
+        $kiss->log->silent = true;
 
-        mkdir($kiss->config['path']['route'], 0777, true);
         file_put_contents(
             $kiss->config['path']['route'] . '/page.yml',
-            "type: page\npath: /hello.html\ntemplate: page.twig\ndata:\n  name: World"
+            "path: /hello.html\ntemplate: page.twig\ndata:\n  name: World"
         );
 
         $kiss->route();
@@ -398,11 +412,11 @@ final class KissTest extends TestCase
         $kiss = new Kiss($dir);
         $kiss->config();
         $kiss->warmup();
+        $kiss->log->silent = true;
 
-        mkdir($kiss->config['path']['route'], 0777, true);
         file_put_contents(
             $kiss->config['path']['route'] . '/blog.yml',
-            "type: blog\npath: /{slug}.html\ntemplate: post.twig\ndata:\n" .
+            "path: /{slug}.html\ntemplate: post.twig\ndata:\n" .
             "  - slug: hello\n    title: Hello\n  - slug: world\n    title: World"
         );
 
@@ -429,16 +443,15 @@ final class KissTest extends TestCase
         $kiss = new Kiss($dir);
         $kiss->config();
         $kiss->warmup();
+        $kiss->log->silent = true;
 
-        mkdir($kiss->config['path']['data'], 0777, true);
         file_put_contents(
             $kiss->config['path']['data'] . '/site.yml',
             "name: MySite"
         );
-        mkdir($kiss->config['path']['route'], 0777, true);
         file_put_contents(
             $kiss->config['path']['route'] . '/page.yml',
-            "type: page\npath: /index.html\ntemplate: page.twig\ndata:\n  title: Home"
+            "path: /index.html\ntemplate: page.twig\ndata:\n  title: Home"
         );
 
         $kiss->route();
@@ -468,21 +481,21 @@ final class KissTest extends TestCase
         $kiss = new Kiss($dir);
         $kiss->config();
         $kiss->warmup();
+        $kiss->log->silent = true;
 
-        mkdir($kiss->config['path']['route'], 0777, true);
         file_put_contents(
             $kiss->config['path']['route'] . '/page.yml',
-            "type: page\npath: /{name}.html\ntemplate: page.twig\ndata:\n  \$ref: " . $refDir . "/people.yml"
+            "path: /{name}.html\ntemplate: page.twig\ndata:\n  \$ref: " . $refDir . "/people.yml"
         );
 
         $kiss->route();
 
         $dist = $kiss->config['path']['dist'];
-        $this->assertFileExists($dist . '/Alice.html');
-        $this->assertFileExists($dist . '/Bob.html');
+        $this->assertFileExists($dist . '/alice.html');
+        $this->assertFileExists($dist . '/bob.html');
         $this->assertStringContainsString(
             'Alice',
-            file_get_contents($dist . '/Alice.html')
+            file_get_contents($dist . '/alice.html')
         );
     }
 
@@ -495,15 +508,15 @@ final class KissTest extends TestCase
         $kiss = new Kiss($dir);
         $kiss->config();
         $kiss->warmup();
+        $kiss->log->silent = true;
 
-        mkdir($kiss->config['path']['route'], 0777, true);
         file_put_contents(
             $kiss->config['path']['route'] . '/a.yml',
-            "type: page\npath: /a.html\ntemplate: page.twig\ndata:\n  name: A"
+            "path: /a.html\ntemplate: page.twig\ndata:\n  name: A"
         );
         file_put_contents(
             $kiss->config['path']['route'] . '/b.yml',
-            "type: page\npath: /b.html\ntemplate: page.twig\ndata:\n  name: B"
+            "path: /b.html\ntemplate: page.twig\ndata:\n  name: B"
         );
 
         $kiss->route();
@@ -519,26 +532,107 @@ final class KissTest extends TestCase
         $this->assertFileDoesNotExist($dist . '/b.html');
     }
 
+    public function testGetWatchesReturnsWatchableDirs()
+    {
+        $dir = $this->makeTempDir();
+        mkdir($dir . '/template', 0777, true);
+        mkdir($dir . '/copy', 0777, true);
+        mkdir($dir . '/data', 0777, true);
+        mkdir($dir . '/route', 0777, true);
+
+        $kiss = new Kiss($dir);
+        $kiss->config();
+        $kiss->warmup();
+
+        $watches = $kiss->getWatches();
+
+        $this->assertStringContainsString('kiss.yml', $watches);
+        $this->assertStringContainsString('copy', $watches);
+        $this->assertStringContainsString('data', $watches);
+        $this->assertStringContainsString('route', $watches);
+        $this->assertStringContainsString('template', $watches);
+    }
+
+    public function testWatchedConfigChangeRebuilds()
+    {
+        $dir = $this->makeTempDir();
+        mkdir($dir . '/template', 0777, true);
+        file_put_contents($dir . '/template/page.twig', 'Hello {{ name }}');
+
+        $kiss = new Kiss($dir);
+        $kiss->config();
+        $kiss->warmup();
+        $kiss->log->silent = true;
+
+        file_put_contents(
+            $kiss->config['path']['route'] . '/page.yml',
+            "path: /hello.html\ntemplate: page.twig\ndata:\n  name: World"
+        );
+
+        $kiss->watched($kiss->entry);
+
+        $this->assertFileExists($kiss->config['path']['dist'] . '/hello.html');
+    }
+
+    public function testWatchedRouteChangeRebuildsSingleRoute()
+    {
+        $dir = $this->makeTempDir();
+        mkdir($dir . '/template', 0777, true);
+        file_put_contents($dir . '/template/a.twig', '{{ name }}');
+
+        $kiss = new Kiss($dir);
+        $kiss->config();
+        $kiss->warmup();
+        $kiss->log->silent = true;
+
+        file_put_contents(
+            $kiss->config['path']['route'] . '/a.yml',
+            "path: /a.html\ntemplate: a.twig\ndata:\n  name: RouteA"
+        );
+
+        $kiss->watched($kiss->config['path']['route'] . '/a.yml');
+
+        $this->assertFileExists($kiss->config['path']['dist'] . '/a.html');
+        $this->assertStringContainsString(
+            'RouteA',
+            file_get_contents($kiss->config['path']['dist'] . '/a.html')
+        );
+    }
+
+    public function testWatchedDataChangeRebuildsAllRoutes()
+    {
+        $dir = $this->makeTempDir();
+        mkdir($dir . '/template', 0777, true);
+        file_put_contents($dir . '/template/page.twig', '{{ global.site.name }} - {{ title }}');
+
+        $kiss = new Kiss($dir);
+        $kiss->config();
+        $kiss->warmup();
+        $kiss->log->silent = true;
+
+        file_put_contents(
+            $kiss->config['path']['data'] . '/site.yml',
+            "name: MySite"
+        );
+        file_put_contents(
+            $kiss->config['path']['route'] . '/page.yml',
+            "path: /index.html\ntemplate: page.twig\ndata:\n  title: Home"
+        );
+
+        $kiss->watched($kiss->config['path']['data'] . '/site.yml');
+
+        $this->assertFileExists($kiss->config['path']['dist'] . '/index.html');
+        $this->assertStringContainsString(
+            'MySite',
+            file_get_contents($kiss->config['path']['dist'] . '/index.html')
+        );
+    }
+
     private function makeTempDir(): string
     {
         $dir = sys_get_temp_dir() . '/kiss-test-' . uniqid();
         mkdir($dir, 0777, true);
         $this->tmpDirs[] = $dir;
         return $dir;
-    }
-
-    private function rmDir(string $dir): void
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-        $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
-        );
-        foreach ($files as $file) {
-            $file->isDir() ? rmdir($file->getPathname()) : unlink($file->getPathname());
-        }
-        rmdir($dir);
     }
 }

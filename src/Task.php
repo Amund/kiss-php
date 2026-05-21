@@ -28,7 +28,7 @@ class Task
         return $this;
     }
 
-    private static function formatDuration(float $seconds): string
+    public static function formatDuration(float $seconds): string
     {
         $units = [
             'd' => 86400,

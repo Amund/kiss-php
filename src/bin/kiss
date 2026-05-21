@@ -1,10 +1,11 @@
 #!/usr/bin/env php
-<?php namespace Kiss;
+<?php
+
+namespace Kiss;
 
 if (!is_file('vendor/autoload.php')) {
-    die(
-        "\nNo autoload.php found, you must launch 'make composer i' before.\n\n"
-    );
+    fwrite(STDERR, "\nNo autoload.php found, you must run 'make composer i' first.\n\n");
+    exit(1);
 }
 
 require_once 'vendor/autoload.php';
@@ -31,15 +32,11 @@ try {
                 ->version()
                 ->warmup()
                 ->build();
-
-            $kiss->log
-                ->line()
-                ->line('Watching...')
-                ->line();
+            $kiss->log->line('Watching...');
             $watches = $kiss->getWatches();
             system(
                 <<<SH
-inotifywait -mrq -e close_write -e moved_to -e delete --format '%w%f' $watches | while read LINE; do vendor/bin/kiss watched \$LINE; done
+inotifywait -mrq -e close_write -e moved_to -e moved_from -e delete --format '%w%f' $watches | while read LINE; do vendor/bin/kiss watched \$LINE; done
 SH
             );
             break;
@@ -47,7 +44,7 @@ SH
         case 'watched':
             $arg = $argv[2] ?? null;
             $kiss->warmup()->watched($arg);
-            break;
+            exit(0);
 
         case 'reset':
             $arg = $argv[2] ?? 'all';
@@ -84,14 +81,23 @@ SH
             $kiss->version()->help();
     }
 } catch (KissException $e) {
-    $kiss->log->error('{message} in {file} line {line}' . "\n" . '{trace}', [
-        '{message}' => $e->getMessage(),
-        '{file}' => $e->getFile(),
-        '{line}' => $e->getLine(),
-        '{trace}' => $e->getTraceAsString(),
-    ]);
-    $kiss->log->line();
-    die();
+    $kiss->log->error($e->getMessage());
+
+    if ($e->isUserCodeError()) {
+        $prev = $e->getPrevious();
+        $relFile = str_replace(getcwd() . '/', '', $prev->getFile());
+        $kiss->log->error('  File: {file} line {line}', [
+            '{file}' => $relFile,
+            '{line}' => $prev->getLine(),
+        ]);
+    }
+
+    $fix = $e->getFix();
+    if ($fix) {
+        $kiss->log->info($fix);
+    }
+
+    exit(1);
 }
 
 $kiss->log->line();

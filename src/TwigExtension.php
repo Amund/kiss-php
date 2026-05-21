@@ -6,12 +6,29 @@ use Twig\Environment;
 use Twig\Template;
 use Twig\TemplateWrapper;
 use Twig\TwigFunction;
+use Twig\TwigFilter;
 use Twig\Extension\AbstractExtension;
+use League\CommonMark\GithubFlavoredMarkdownConverter;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\Dumper\HtmlDumper;
 
 class TwigExtension extends AbstractExtension
 {
+    public function getFilters(): array
+    {
+        return [
+            new TwigFilter('markdown', [$this, 'markdownToHtml'], [
+                'is_safe' => ['html'],
+            ]),
+        ];
+    }
+
+    public function markdownToHtml(string $content): string
+    {
+        $converter = new GithubFlavoredMarkdownConverter();
+        return $converter->convert($content)->getContent();
+    }
+
     public function getFunctions(): array
     {
         return [

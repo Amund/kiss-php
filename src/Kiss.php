@@ -7,18 +7,18 @@ use Kiss\DataTree;
 use Kiss\DataSource;
 use Kiss\Log;
 use Kiss\RouteCollection;
+use Kiss\TemplateDeps;
 use Kiss\Tools;
 use Kiss\KissException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Path;
-use Symfony\Component\Yaml\Yaml;
-use Throwable;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
 class Kiss
 {
-    public string $version = '0.1';
+    use Thrower;
+
     public string $entry = 'kiss.yml';
     public string $root = '';
     public ?Log $log = null;
@@ -37,7 +37,7 @@ class Kiss
             'color' => [
                 'path' => 'yellow',
                 'duration' => 'green dim',
-                'error' => 'red dim',
+                'error' => 'red',
             ],
         ],
         'debug' => false,
@@ -45,10 +45,7 @@ class Kiss
 
     public function __construct(string $root = '')
     {
-        $this->root = Path::canonicalize($root);
-        $this->root = empty($this->root)
-            ? ''
-            : $this->root . \DIRECTORY_SEPARATOR;
+        $this->root = $root;
     }
 
     public function newTask(): Task
@@ -56,25 +53,24 @@ class Kiss
         return new Task();
     }
 
+    public function getVersion(): string
+    {
+        $root = $this->root !== '' ? $this->root : getcwd();
+        $path = $root . '/composer.json';
+
+        if (!is_file($path)) {
+            return '0.0';
+        }
+
+        $composer = json_decode(file_get_contents($path), true);
+        return $composer['version'] ?? '0.0';
+    }
+
     public function config()
     {
-        $entry = Path::canonicalize($this->root . $this->entry);
-        if (!\is_file($entry)) {
-            DataSource::saveYaml($entry, $this->config);
-        }
-
-        $parsed = Yaml::parseFile($entry);
-        $this->config = Tools::merge($this->config, $parsed);
-
-        if (\array_key_exists('KISS_DEBUG', $_ENV)) {
-            $this->config['debug'] = Tools::truthy($_ENV['KISS_DEBUG']);
-        }
-        if (\array_key_exists('KISS_VERBOSE', $_ENV)) {
-            $this->config['log']['verbose'] = Tools::truthy(
-                $_ENV['KISS_VERBOSE']
-            );
-        }
-
+        $config = new Config($this->root, $this->entry);
+        $config->load();
+        $this->config = $config->toArray();
         $this->log = new Log($this->config['log']);
         return $this;
     }
@@ -85,7 +81,7 @@ class Kiss
             ->line('{icon}{kiss} {version} {baseline}', [
                 '{icon}' => '💋',
                 '{kiss}' => Log::color('green bold', 'Kiss'),
-                '{version}' => Log::color('yellow', 'v' . $this->version),
+                '{version}' => Log::color('yellow', 'v' . $this->getVersion()),
                 '{baseline}' => Log::color(
                     'white dim',
                     '- Keep it simply static'
@@ -103,22 +99,22 @@ class Kiss
             'It supports yaml, json or php data sources, from local or remote files,' .
             ' maximizing the use of local caches to speed up website building in case of modifications.';
         $this->log
-            ->line(Log::color('white bold', 'DESCRIPTION'))
-            ->line('────────────────────')
-            ->line(Log::color('white dim', $description))
+            ->info('DESCRIPTION')
+            ->info('────────────────────')
+            ->info($description)
             ->line()
-            ->line(Log::color('white bold', 'HELP'))
-            ->line('────────────────────');
+            ->info('HELP')
+            ->info('────────────────────');
         $help = [
-            'build' => 'Build site (launch all tasks: copy, route, css, img)',
+            'build' => 'Build site (launch all tasks: copy, route, img)',
             'watch' =>
-                'Build site, then watch for modifications (using inotifywait)',
+            'Build site, then watch for modifications (using inotifywait)',
             'reset [dist|cache]' =>
-                'Remove dist or cache folder, or all if omitted',
+            'Remove dist or cache folder, or all if omitted',
             'copy [path]' =>
-                'Copy a single file from copy to dist, or launch a complete mirroring if omitted',
+            'Copy a single file from copy to dist, or launch a complete mirroring if omitted',
             'route list|[name]' =>
-                'List routes, build a single route or all if omitted',
+            'List routes, build a single route or all if omitted',
             'img' => '[TODO] Build images',
         ];
         $pad = max(array_map('strlen', array_keys($help))) + 8;
@@ -130,26 +126,6 @@ class Kiss
 
     public function warmup()
     {
-        $fs = new Filesystem();
-
-        $root = rtrim($this->root, '/');
-        $projectHash = md5($root ?: getcwd());
-
-        foreach ($this->config['path'] as $k => $path) {
-            if ($k === 'cache') {
-                if ($path === 'tmp') {
-                    $path = '/tmp/kiss/' . $projectHash;
-                }
-                $path .= '/kiss';
-            }
-            $path = Path::isAbsolute($path) ? $path : $this->root . $path;
-            $path = Path::canonicalize($path);
-            $this->config['path'][$k] = $path;
-            if (!\is_dir($path)) {
-                $fs->mkdir($path, 0777);
-            }
-        }
-
         $twigLoader = new FilesystemLoader(
             $this->config['path']['template']
         );
@@ -164,6 +140,13 @@ class Kiss
     public function build()
     {
         $this->copy()->route();
+        $cleaner = new DistCleaner(
+            $this->config['path']['cache'],
+            $this->config['path']['dist'],
+            $this->log
+        );
+        $cleaner->clean();
+        $this->log->line();
         return $this;
     }
 
@@ -171,9 +154,7 @@ class Kiss
     {
         $routePath = $this->config['path']['route'];
         if (!is_dir($routePath)) {
-            $this->log->line(
-                'route... ' . Log::color('yellow', 'no route folder')
-            );
+            $this->log->fail('route', 'folder not found');
             return $this;
         }
 
@@ -184,21 +165,19 @@ class Kiss
         $collection = new RouteCollection($routePath);
 
         if ($collection->getCount() === 0) {
-            $this->log->line(
-                'route... ' . Log::color('yellow', 'no routes to build')
-            );
+            $this->log->fail('route', 'no routes to build');
             return $this;
         }
 
         if ($arg === 'list') {
-            $this->log->line(
-                'route... ' .
-                    Log::color('bold', (string) $collection->getCount()) .
-                    ' routes available'
+            $this->log->info(
+                ' route  {n} routes available',
+                ['{n}' => (string) $collection->getCount()]
             );
             foreach ($collection->getRoutes() as $route) {
                 $this->log->line(
-                    '  - ' . Log::color('yellow', $route->name)
+                    '  · {name}',
+                    ['{name}' => $route->name]
                 );
             }
             return $this;
@@ -209,75 +188,65 @@ class Kiss
             : [$arg => $collection->get($arg)];
 
         if (!$routes || reset($routes) === null) {
-            $this->log->line(
-                'route... ' . Log::color('yellow', 'route "' . $arg . '" not found')
-            );
+            $this->log->fail('route', $arg . ' not found');
+            $this->log->info('       Run: kiss route list');
             return $this;
         }
 
-        $global = $this->loadGlobalData($tree);
+        $builder = new RouteBuilder(
+            $tree,
+            $this->twig,
+            $this->log,
+            $this->config['path']['dist'],
+            $this->config['path']['data']
+        );
+
         $dist = $this->config['path']['dist'];
         $manifestPath = $this->config['path']['cache'] . '/route-manifest.php';
         $generated = [];
-
-        $this->log
-            ->line(
-                'route... ' .
-                    Log::color('bold', (string) count($routes)) .
-                    ' route' . (count($routes) > 1 ? 's' : '')
-            )
-            ->line();
+        $totalPages = 0;
+        $routeStart = microtime(true);
 
         foreach ($routes as $route) {
-            $this->log->line(
-                '  ' . Log::color('yellow', $route->name) . ':'
-            );
-
-            try {
-                $pages = $route->getPages($tree);
-            } catch (KissException $e) {
-                $this->log->error(
-                    '    ' . $e->getMessage()
-                );
-                continue;
+            if ($arg !== 'all') {
+                $manifest = is_file($manifestPath) ? (require $manifestPath) : [];
+                if (isset($manifest[$route->name])) {
+                    $builder->removeStaleFiles($dist, $manifest[$route->name], $dist);
+                }
             }
 
-            foreach ($pages as $path => $data) {
-                $data['global'] = $global;
-                $render = $this->twig->render($route->template, $data);
-                $outPath = $dist . '/' . $path;
-                $fs = new Filesystem();
-                $fs->dumpFile($outPath, $render);
-                $generated[$path] = true;
-                $this->log->line(
-                    '    ✔ ' . Log::color('dim', $path)
-                );
-            }
-            $this->log->line();
+            $paths = $builder->buildAndLog($route);
+            $generated[$route->name] = $paths;
+            $totalPages += count($paths);
+        }
+
+        $manifest = is_file($manifestPath) ? (require $manifestPath) : [];
+
+        if (array_is_list($manifest)) {
+            $manifest = [];
         }
 
         if ($arg === 'all') {
-            $previous = is_file($manifestPath) ? (require $manifestPath) : [];
-
-            foreach ($previous as $path) {
-                if (!isset($generated[$path])) {
-                    $stalePath = $dist . '/' . $path;
-                    if (is_file($stalePath)) {
-                        unlink($stalePath);
-                        $this->log->line(
-                            '    ✗ ' . Log::color('yellow', 'removed stale ' . $path)
-                        );
+            $generatedFlat = [];
+            foreach ($generated as $paths) {
+                foreach ($paths as $p) {
+                    $generatedFlat[$p] = true;
+                }
+            }
+            foreach ($manifest as $name => $paths) {
+                foreach ($paths as $p) {
+                    if (!isset($generatedFlat[$p])) {
+                        $builder->removeStaleFiles($dist, [$p], $dist);
+                        $this->log->fail('clean', $p);
                     }
                 }
             }
+            $manifest = $generated;
+        } else {
+            foreach ($generated as $name => $paths) {
+                $manifest[$name] = $paths;
+            }
         }
-
-        $manifest = $arg === 'all'
-            ? array_keys($generated)
-            : array_values(array_unique(array_merge(
-                is_file($manifestPath) ? (require $manifestPath) : [],
-                array_keys($generated)
-            )));
 
         if (count($manifest) > 0) {
             $dir = dirname($manifestPath);
@@ -289,66 +258,42 @@ class Kiss
             unlink($manifestPath);
         }
 
+        if ($arg === 'all') {
+            $dur = Task::formatDuration(microtime(true) - $routeStart);
+            $this->log->ok('built', $totalPages . ' page' . ($totalPages > 1 ? 's' : ''), $dur);
+        }
+
         return $this;
     }
 
-    private function loadGlobalData(DataTree $tree): array
-    {
-        $dataPath = $this->config['path']['data'];
-        if (!is_dir($dataPath)) {
-            return [];
-        }
-
-        $raw = [];
-        $extensions = ['yml', 'yaml', 'json', 'php'];
-
-        foreach ($extensions as $ext) {
-            $files = glob($dataPath . '/*.' . $ext);
-            if ($files === false) {
-                continue;
-            }
-            foreach ($files as $file) {
-                $name = pathinfo($file, PATHINFO_FILENAME);
-                $ds = new DataSource($file);
-                $raw[$name] = $ds->content;
-            }
-        }
-
-        return $tree->resolve($raw);
-    }
-
-    public function copy(string $path = null)
+    public function copy(?string $path = null)
     {
         $copyPath = $this->config['path']['copy'];
         $distPath = $this->config['path']['dist'];
 
         if (!is_dir($copyPath)) {
-            $this->log->line(
-                'copy... ' . Log::color('yellow', 'no copy folder')
-            );
+            $this->log->fail('copy', 'folder not found');
+            $this->log->info('       create a {path} directory', [
+                '{path}' => $copyPath,
+            ]);
             return $this;
         }
 
         $sync = new CopySync($this->config['path']['cache']);
 
         if ($path === null) {
+            $start = microtime(true);
             $sync->sync($copyPath, $distPath);
-            $this->log->line(
-                'copy... ' .
-                    Log::color('green', 'ok')
-            );
+            $dur = Task::formatDuration(microtime(true) - $start);
+            $this->log->ok('copy', $sync->getTotalFiles() . ' files', $dur);
         } else {
             $srcPath = $copyPath . '/' . $path;
             if (is_file($srcPath)) {
                 $sync->syncFile($copyPath, $distPath, $path);
-                $this->log->line(
-                    'copy... ' . Log::color('green', $path)
-                );
+                $this->log->ok('copy', $path);
             } else {
                 $sync->removeFile($distPath, $path);
-                $this->log->line(
-                    'copy... ' . Log::color('yellow', 'removed ' . $path)
-                );
+                $this->log->fail('copy', $path);
             }
         }
 
@@ -357,7 +302,7 @@ class Kiss
 
     public function img()
     {
-        $this->log->line(Log::color('dim', 'TODO: img'));
+        $this->log->info('TODO: img');
         return $this;
     }
 
@@ -366,7 +311,10 @@ class Kiss
         $args = ['all', 'dist', 'cache'];
         if (!\in_array($arg, $args)) {
             $this->error(
-                'reset accept "all", "dist" or "cache" as argument'
+                'reset accept "all", "dist" or "cache" as argument',
+                [],
+                null,
+                'Try: kiss reset all, kiss reset dist, or kiss reset cache'
             );
         }
 
@@ -390,13 +338,16 @@ class Kiss
             $this->entry,
             $this->config['path']['copy'],
             $this->config['path']['data'],
+            $this->config['path']['route'],
             $this->config['path']['template'],
         ];
         return implode(' ', $watches);
     }
 
-    public function watched($path)
+    public function watched(string $path)
     {
+        $this->log->prependTimestamp = true;
+
         if ($path === $this->entry) {
             $this->build();
         } elseif (str_starts_with($path, $this->config['path']['copy'])) {
@@ -406,14 +357,27 @@ class Kiss
             );
             $sync = new CopySync($this->config['path']['cache']);
             if (is_file($path)) {
-                $sync->syncFile(
-                    $this->config['path']['copy'],
-                    $this->config['path']['dist'],
-                    $rel
-                );
+                if (
+                    $sync->syncFile(
+                        $this->config['path']['copy'],
+                        $this->config['path']['dist'],
+                        $rel
+                    )
+                ) {
+                    $this->log->ok('copy', $rel);
+                }
             } else {
-                $sync->removeFile($this->config['path']['dist'], $rel);
+                if ($sync->removeFile($this->config['path']['dist'], $rel)) {
+                    $this->log->fail('copy', $rel);
+                }
             }
+        } elseif (str_starts_with($path, $this->config['path']['route'])) {
+            $rel = Path::makeRelative(
+                $path,
+                $this->config['path']['route']
+            );
+            $name = pathinfo($rel, PATHINFO_FILENAME);
+            $this->route($name);
         } elseif (
             str_starts_with($path, $this->config['path']['data']) ||
             str_starts_with($path, 'http:') ||
@@ -421,15 +385,26 @@ class Kiss
         ) {
             $this->route();
         } elseif (str_starts_with($path, $this->config['path']['template'])) {
-            $this->route();
+            $rel = Path::makeRelative(
+                $path,
+                $this->config['path']['template']
+            );
+            $deps = new TemplateDeps(
+                $this->config['path']['template'],
+                $this->config['path']['cache']
+            );
+            $impacted = $deps->findImpacted($rel);
+            $collection = new RouteCollection($this->config['path']['route']);
+            $built = 0;
+            foreach ($collection->getRoutes() as $route) {
+                if (in_array($route->template, $impacted, true)) {
+                    $this->route($route->name);
+                    $built++;
+                }
+            }
+            if ($built === 0) {
+                $this->log->fail('template', $rel . ' — no matching routes');
+            }
         }
-    }
-
-    public function error(
-        string $str,
-        array $vars = [],
-        Throwable $previous = null
-    ) {
-        throw new KissException(strtr($str, $vars), 0, $previous);
     }
 }

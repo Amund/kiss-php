@@ -30,7 +30,12 @@ class DataTree
                 $source = Tools::normalizeSource($source);
                 if (isset($stack[$source])) {
                     throw new KissException(
-                        'Circular reference, "' . $source . '" is already loaded'
+                        'Circular reference, "' .
+                            $source .
+                            '" is already loaded',
+                        0,
+                        null,
+                        'Check your $ref chains for loops'
                     );
                 }
                 $stack[$source] = true;

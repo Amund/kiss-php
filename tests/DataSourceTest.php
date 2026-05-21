@@ -6,6 +6,8 @@ use Kiss\DataSource;
 use Kiss\DataSource\PhpLoader;
 use Kiss\DataSource\JsonLoader;
 use Kiss\DataSource\YamlLoader;
+use Kiss\DataSource\IniLoader;
+use Kiss\DataSource\XmlLoader;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 
@@ -213,6 +215,112 @@ final class DataSourceTest extends TestCase
         $loader->load();
         $this->assertSame($path, $loader->filePath());
         $this->assertSame('data', $loader->content());
+
+        unlink($path);
+    }
+
+    public function testLoadFromXml()
+    {
+        vfsStream::create(['test.xml' => '<?xml version="1.0"?><root><item>ok</item></root>']);
+        $path = $this->root->url() . '/test.xml';
+
+        $ds = new DataSource($path);
+        $this->assertEquals(['item' => 'ok'], $ds->content);
+        $this->assertEquals($path, $ds->filePath);
+    }
+
+    public function testLoadFromBadXmlFileMustThrowException()
+    {
+        $this->expectException(KissException::class);
+
+        vfsStream::create(['test.xml' => 'not xml']);
+        $path = $this->root->url() . '/test.xml';
+
+        $ds = new DataSource($path);
+    }
+
+    public function testLoadFromIni()
+    {
+        vfsStream::create([
+            'test.ini' => <<<INI
+greeting = hello
+[section]
+key = value
+INI
+        ]);
+        $path = $this->root->url() . '/test.ini';
+
+        $ds = new DataSource($path);
+        $this->assertEquals([
+            'greeting' => 'hello',
+            'section' => ['key' => 'value'],
+        ], $ds->content);
+        $this->assertEquals($path, $ds->filePath);
+    }
+
+    public function testLoadFromBadIniFileMustThrowException()
+    {
+        $this->expectException(KissException::class);
+
+        vfsStream::create(['test.ini' => "  = invalid"]);
+        $path = $this->root->url() . '/test.ini';
+
+        $ds = new DataSource($path);
+    }
+
+    public function testSaveXml()
+    {
+        $path = sys_get_temp_dir() . '/kiss-test-save-xml-' . uniqid() . '.xml';
+
+        DataSource::saveXml($path, ['item' => 'value', 'nested' => ['key' => 'val']]);
+        $this->assertFileExists($path);
+
+        $loaded = simplexml_load_file($path);
+        $this->assertEquals('value', (string) $loaded->item);
+        $this->assertEquals('val', (string) $loaded->nested->key);
+
+        unlink($path);
+    }
+
+    public function testSaveIni()
+    {
+        $path = sys_get_temp_dir() . '/kiss-test-save-ini-' . uniqid() . '.ini';
+
+        DataSource::saveIni($path, [
+            'greeting' => 'hello',
+            'section' => ['key' => 'value'],
+        ]);
+        $this->assertFileExists($path);
+
+        $loaded = parse_ini_file($path, true);
+        $this->assertEquals('hello', $loaded['greeting']);
+        $this->assertEquals('value', $loaded['section']['key']);
+
+        unlink($path);
+    }
+
+    public function testIniLoaderPublicMethods()
+    {
+        $path = sys_get_temp_dir() . '/kiss-test-loader-ini-' . uniqid() . '.ini';
+        file_put_contents($path, "key = value\n[section]\nfoo = bar");
+
+        $loader = new IniLoader($path);
+        $loader->load();
+        $this->assertSame($path, $loader->filePath());
+        $this->assertSame(['key' => 'value', 'section' => ['foo' => 'bar']], $loader->content());
+
+        unlink($path);
+    }
+
+    public function testXmlLoaderPublicMethods()
+    {
+        $path = sys_get_temp_dir() . '/kiss-test-loader-xml-' . uniqid() . '.xml';
+        file_put_contents($path, '<?xml version="1.0"?><root><item>data</item></root>');
+
+        $loader = new XmlLoader($path);
+        $loader->load();
+        $this->assertSame($path, $loader->filePath());
+        $this->assertSame(['item' => 'data'], $loader->content());
 
         unlink($path);
     }

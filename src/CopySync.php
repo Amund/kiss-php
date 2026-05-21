@@ -16,10 +16,10 @@ class CopySync
         $this->manifest = $this->load();
     }
 
-    public function sync(string $sourceDir, string $destDir): void
+    public function sync(string $sourceDir, string $destDir): int
     {
         if (!is_dir($sourceDir)) {
-            return;
+            return 0;
         }
         if (!is_dir($destDir)) {
             mkdir($destDir, 0777, true);
@@ -27,6 +27,7 @@ class CopySync
 
         $files = $this->scanFiles($sourceDir);
         $currentPaths = [];
+        $changed = 0;
 
         foreach ($files as $relative => $hash) {
             $currentPaths[$relative] = true;
@@ -42,6 +43,7 @@ class CopySync
                 }
                 copy($sourceDir . '/' . $relative, $destPath);
                 $this->manifest[$relative] = $hash;
+                $changed++;
             }
         }
 
@@ -52,19 +54,26 @@ class CopySync
                     unlink($destPath);
                 }
                 unset($this->manifest[$relative]);
+                $changed++;
             }
         }
 
         $this->save();
+        return $changed;
     }
 
-    public function syncFile(string $sourceDir, string $destDir, string $relative): void
+    public function getTotalFiles(): int
+    {
+        return count($this->manifest);
+    }
+
+    public function syncFile(string $sourceDir, string $destDir, string $relative): bool
     {
         $srcPath = $sourceDir . '/' . $relative;
         $destPath = $destDir . '/' . $relative;
 
         if (!is_file($srcPath)) {
-            return;
+            return false;
         }
 
         $hash = hash_file('crc32c', $srcPath);
@@ -80,10 +89,13 @@ class CopySync
             copy($srcPath, $destPath);
             $this->manifest[$relative] = $hash;
             $this->save();
+            return true;
         }
+
+        return false;
     }
 
-    public function removeFile(string $destDir, string $relative): void
+    public function removeFile(string $destDir, string $relative): bool
     {
         if (isset($this->manifest[$relative])) {
             $destPath = $destDir . '/' . $relative;
@@ -92,7 +104,9 @@ class CopySync
             }
             unset($this->manifest[$relative]);
             $this->save();
+            return true;
         }
+        return false;
     }
 
     private function scanFiles(string $dir): array

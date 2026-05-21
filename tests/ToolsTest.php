@@ -11,6 +11,8 @@ final class ToolsTest extends TestCase
         $values = [
             ['Poésie Française', 'poesie-francaise'],
             ['C\'est le cœur du problème ?', 'c-est-le-coeur-du-probleme'],
+            ['ÄÖÜ äöü ß', 'aou-aou-ss'],
+            ['Привет мир', 'privet-mir'],
         ];
         foreach ($values as $v) {
             $this->assertEquals(Tools::slugify($v[0]), $v[1]);
