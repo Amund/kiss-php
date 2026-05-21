@@ -1,66 +1,67 @@
 # 💋 Kiss — Keep It Simply Static
 
-Générateur de site statique en PHP. Utilise **Twig** pour les templates, supporte les sources de données YAML/JSON/PHP/XML/INI, la génération de pages avec paramètres dynamiques, la synchronisation de fichiers statiques, et un mode *watch* avec recompilation partielle.
+A PHP static site generator. Uses **Twig** for templating, supports YAML/JSON/PHP/XML/INI data sources, dynamic page parameters, static file sync, and a *watch* mode with partial rebuilds.
 
-## Prérequis
+## Prerequisites
 
 - Docker & Docker Compose
-- `inotify-tools` (pour le mode *watch*, côté host uniquement)
+- `inotify-tools` (for *watch* mode, host-side only)
 
-## Démarrage
+## Getting started
 
 ```sh
-make up                          # Lance les containers
-make composer -- install         # Installe les dépendances
-make kiss -- build               # Construit le site
-make kiss -- watch               # Construit + surveille les modifications
+make up                          # Start containers
+make composer -- install         # Install dependencies
+make kiss -- build               # Build the site
+make kiss -- watch               # Build + watch for changes
 ```
 
-## Commandes
+## Commands
 
 ### Make
 
-| Commande | Description |
+| Command | Description |
 |---|---|
-| `make up` | Démarre les containers |
-| `make down` | Arrête les containers |
-| `make shell` | Bash dans le container `app` |
-| `make composer -- <args>` | Exécute Composer |
-| `make tests` | Lance tous les tests PHPUnit |
-| `make test -- <args>` | Test unitaire ciblé (`make test -- tests/KissTest.php`) |
-| `make phpcs` | Lint PSR-12 |
-| `make phpstan` | Analyse statique niveau 5 |
-| `make coverage` | Rapport de couverture HTML (`coverage/index.html`, nécessite `XDEBUG_MODE=coverage`) |
-| `make kiss -- <args>` | Exécute le CLI (`src/bin/kiss`) |
+| `make up` | Start containers |
+| `make down` | Stop containers |
+| `make shell` | Bash into the `app` container |
+| `make composer -- <args>` | Run Composer |
+| `make tests` | Run all PHPUnit tests |
+| `make test -- <args>` | Run a specific test (`make test -- tests/KissTest.php`) |
+| `make phpcs` | PSR-12 lint |
+| `make phpstan` | Static analysis level 5 |
+| `make coverage` | HTML coverage report (`coverage/index.html`, requires `XDEBUG_MODE=coverage`) |
+| `make kiss -- <args>` | Run the CLI (`src/bin/kiss`) |
+| `make tag` | Git tag from `composer.json` version (requires `jq`) |
 
-> ⚠️ Make capture les flags (`-y`, `--version`). Contournement : `make kiss -- build` ou `make kiss -- --version`.
+> ⚠️ Make swallows flags (`-y`, `--version`). Workaround: `make kiss -- build` or `make kiss -- --version`.
 
 ### CLI (via `make kiss --`)
 
-| Commande | Description |
+| Command | Description |
 |---|---|
-| `kiss build` | Construit tout le site |
-| `kiss watch` | Construit puis surveille les fichiers avec `inotifywait` |
-| `kiss reset [all\|dist\|cache]` | Supprime les dossiers `web/` et/ou `tmp/` |
-| `kiss route [list\|nom]` | Liste les routes ou reconstruit une route spécifique |
-| `kiss copy [chemin]` | Synchronise un fichier depuis `copy/` vers `web/` |
-| `kiss test` | Valide la configuration (warmup sans build) |
+| `kiss build` | Build the whole site |
+| `kiss watch` | Build then watch files with `inotifywait` |
+| `kiss reset [all\|dist\|cache]` | Remove `web/` and/or `tmp/` directories |
+| `kiss route [list\|name]` | List routes or rebuild a specific route |
+| `kiss copy [path]` | Sync a file from `copy/` to `web/` |
+| `kiss test` | Validate configuration (warmup without build) |
 
-## Structure du projet
+## Project structure
 
 ```
-kiss.yml        → Configuration du site
-├── copy/       → Fichiers statiques (copiés tels quels vers web/)
-├── data/       → Données globales (YAML/JSON/PHP/XML/INI)
-├── route/      → Définitions de routes (YAML/JSON/PHP/XML/INI)
-├── template/   → Templates Twig
-├── web/        → Site généré (dist)
-└── tmp/        → Cache (résolu vers /tmp/kiss/<hash>)
+kiss.yml        → Site configuration
+├── copy/       → Static files (copied as-is to web/)
+├── data/       → Global data (YAML/JSON/PHP/XML/INI/MD)
+├── route/      → Route definitions (YAML/JSON/PHP/XML/INI)
+├── template/   → Twig templates
+├── web/        → Generated site (dist)
+└── tmp/        → Cache (resolved to /tmp/kiss/<hash>)
 ```
 
 ## Configuration
 
-Fichier `kiss.yml` (supporté aussi : `.yaml`, `.php`, `.json`, `.xml`, `.ini`).
+File `kiss.yml` (also supports `.yaml`, `.php`, `.json`, `.xml`, `.ini`).
 
 ```yaml
 debug: true
@@ -73,41 +74,60 @@ path:
   cache: tmp
 ```
 
-Variables d'environnement (prioritaires) :
+Environment variables (take precedence):
 - `KISS_DEBUG=true`
 - `KISS_VERBOSE=true`
 
-## Sources de données
+## Data sources
 
-Les fichiers dans `data/` sont chargés automatiquement et disponibles dans Twig via `{{ global.* }}`.
+Files in `data/` are loaded automatically and available in Twig via `{{ global.* }}`.
 
-Exemple — `data/site.yml` :
+Example — `data/site.yml`:
 ```yaml
-name: Mon Site
-tagline: Super site statique
+name: My Site
+tagline: Great static site
 ```
 
-Dans un template Twig :
+In a Twig template:
 ```twig
 <h1>{{ global.site.name }}</h1>
 <p>{{ global.site.tagline }}</p>
 ```
 
+### Markdown files
+
+Markdown files (`.md`) in `data/` support frontmatter delimited by `---`:
+
+```markdown
+---
+title: My Article
+date: 2024-01-01
+---
+Content **markdown** here.
+```
+
+The frontmatter fields are available directly, and the body is available as `content`. Combine with the `|markdown` filter in your templates:
+
+```twig
+<h1>{{ title }}</h1>
+<div>{{ content|markdown|raw }}</div>
+```
+
 ## Routes
 
-### Page unique
+### Single page
 
-`route/index.yml` :
+`route/index.yml`:
 ```yaml
 path: /index.html
 template: page.twig
 data:
-  title: Accueil
+  title: Home
 ```
 
-### Pages multiples avec paramètres
+### Multiple pages with parameters
 
-`route/blog.yml` :
+`route/blog.yml`:
 ```yaml
 path: /{slug}.html
 template: post.twig
@@ -118,7 +138,7 @@ data:
     title: Second article
 ```
 
-### Référence externe ($ref)
+### External reference ($ref)
 
 ```yaml
 path: /{slug}.html
@@ -127,23 +147,23 @@ data:
   $ref: data/articles.yml
 ```
 
-## Fonctionnement interne
+## How it works
 
-- **Route manifest** : `tmp/kiss/route-manifest.php` enregistre les fichiers générés par chaque route ; les fichiers orphelins sont nettoyés à la reconstruction.
-- **Template deps** : `tmp/kiss/template-deps.php` trace les dépendances entre templates (extends/include/embed) pour les recompilations partielles.
-- **DataTree** : cache les sources de données distantes et locales sous forme de fichiers PHP sérialisés.
-- **Watch** : `inotifywait` détecte les modifications et recompile uniquement les routes impactées.
+- **Route manifest**: `tmp/kiss/route-manifest.php` tracks which files each route generated; orphaned files are cleaned on rebuild.
+- **Template deps**: `tmp/kiss/template-deps.php` traces dependencies between templates (extends/include/embed) for partial rebuilds.
+- **DataTree**: caches remote and local data sources as serialized PHP files.
+- **Watch**: `inotifywait` detects changes and recompiles only the impacted routes.
 
 ## Tests
 
 ```sh
-make tests                   # Tous les tests
-make test -- --filter=testBuild  # Test spécifique
-make coverage                # Rapport HTML
+make tests                       # All tests
+make test -- --filter=testBuild  # Specific test
+make coverage                    # HTML report
 ```
 
-Les tests créent des dossiers temporaires dans `sys_get_temp_dir()/kiss-test-*` et les nettoient automatiquement. Tous les tests sont unitaires (pas de tests d'intégration).
+Tests create temporary directories in `sys_get_temp_dir()/kiss-test-*` and clean them up automatically. All tests are unit tests (no integration tests).
 
-## Licence
+## License
 
 MIT
