@@ -16,6 +16,10 @@ $kiss->config();
 
 try {
     switch (@$argv[1]) {
+        case 'init':
+            $kiss->config()->init($argv[2] ?? null);
+            break;
+
         case 'test':
             $kiss->warmup();
             break;
@@ -33,12 +37,26 @@ try {
                 ->warmup()
                 ->build();
             $kiss->log->line('Watching...');
+            $kiss->log->line('Press Ctrl+C to stop.');
             $watches = $kiss->getWatches();
-            system(
-                <<<SH
-inotifywait -mrq -e close_write -e moved_to -e moved_from -e delete --format '%w%f' $watches | while read LINE; do vendor/bin/kiss watched \$LINE; done
-SH
-            );
+            $self = $_SERVER['PHP_SELF'] ?? $argv[0];
+
+            if (`which inotifywait 2>/dev/null`) {
+                passthru(sprintf(
+                    "inotifywait -mrq -e close_write -e moved_to -e moved_from -e delete --format '%%w%%f' %s | while read LINE; do %s watched \$LINE; done",
+                    $watches,
+                    $self
+                ));
+            } elseif (`which fswatch 2>/dev/null`) {
+                passthru(sprintf(
+                    "fswatch -r -0 %s | xargs -0 -n1 -I {} %s watched {}",
+                    $watches,
+                    $self
+                ));
+            } else {
+                fwrite(STDERR, "\nNo watcher found. Install inotifywait (linux/wsl) or fswatch (mac).\n\n");
+                exit(1);
+            }
             break;
 
         case 'watched':

@@ -1,0 +1,4 @@
+path: /index.html
+template: page.twig
+data:
+  title: Accueil

@@ -1,0 +1,10 @@
+path:
+  copy: copy
+  data: data
+  route: route
+  template: template
+  dist: web
+  cache: tmp
+log:
+  verbose: false
+debug: false

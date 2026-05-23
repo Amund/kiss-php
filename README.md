@@ -4,48 +4,29 @@ A PHP static site generator. Uses **Twig** for templating, supports YAML/JSON/PH
 
 ## Prerequisites
 
-- Docker & Docker Compose
-- `inotify-tools` (for *watch* mode, host-side only)
+- PHP 8.2+ (CLI)
+- `inotifywait` (Linux/WSL) ou `fswatch` (macOS) pour le mode *watch*
 
 ## Getting started
 
 ```sh
-make up                          # Start containers
-make composer -- install         # Install dependencies
-make kiss -- build               # Build the site
-make kiss -- watch               # Build + watch for changes
+composer global require amund/kiss-php
+kiss init my-site
+cd my-site
+kiss build
 ```
 
-## Commands
-
-### Make
+## CLI
 
 | Command | Description |
 |---|---|
-| `make up` | Start containers |
-| `make down` | Stop containers |
-| `make shell` | Bash into the `app` container |
-| `make composer -- <args>` | Run Composer |
-| `make tests` | Run all PHPUnit tests |
-| `make test -- <args>` | Run a specific test (`make test -- tests/KissTest.php`) |
-| `make phpcs` | PSR-12 lint |
-| `make phpstan` | Static analysis level 5 |
-| `make coverage` | HTML coverage report (`coverage/index.html`, requires `XDEBUG_MODE=coverage`) |
-| `make kiss -- <args>` | Run the CLI (`src/bin/kiss`) |
-| `make tag` | Git tag from `composer.json` version (requires `jq`) |
-
-> ⚠️ Make swallows flags (`-y`, `--version`). Workaround: `make kiss -- build` or `make kiss -- --version`.
-
-### CLI (via `make kiss --`)
-
-| Command | Description |
-|---|---|
-| `kiss build` | Build the whole site |
-| `kiss watch` | Build then watch files with `inotifywait` |
-| `kiss reset [all\|dist\|cache]` | Remove `web/` and/or `tmp/` directories |
-| `kiss route [list\|name]` | List routes or rebuild a specific route |
+| `kiss init [dir]` | Creates a new site in the folder (or the current folder) |
+| `kiss build` | Build the entire website |
+| `kiss watch` | Build and then monitor the files (using inotifywait or fswatch) |
+| `kiss reset [all\|dist\|cache]` | Remove `web/` and/or `tmp/` |
+| `kiss route [list\|name]` | List the routes or rebuild a specific route |
 | `kiss copy [path]` | Sync a file from `copy/` to `web/` |
-| `kiss test` | Validate configuration (warmup without build) |
+| `kiss test` | Validate the configuration (warmup without build) |
 
 ## Project structure
 
@@ -115,7 +96,7 @@ The frontmatter fields are available directly, and the body is available as `con
 
 ## Routes
 
-### Page unique
+### Single page
 
 `route/index.yml`:
 ```yaml
@@ -125,14 +106,14 @@ data:
   title: Home
 ```
 
-### Pages avec paramètres (`items`)
+### Pages with settings (`items`)
 
 `route/blog.yml`:
 ```yaml
 path: /{slug}.html
 template: post.twig
 data:
-  blog_title: "Mon Blog"
+  blog_title: "My Blog"
 items:
   - slug: hello-world
     title: Hello World
@@ -140,9 +121,9 @@ items:
     title: Second article
 ```
 
-Chaque item génère une page. `data` contient les métadonnées, mergées dans chaque page enfant.
+Each item generates a page. `data` contains the metadata, which is merged into each child page.
 
-### Référence externe (`$ref`)
+### External reference (`$ref`)
 
 ```yaml
 path: /{slug}.html
@@ -151,7 +132,7 @@ items:
   $ref: data/articles.yml
 ```
 
-### Page d'archive + liste
+### Archive page + list
 
 ```yaml
 path: /blog
@@ -162,7 +143,7 @@ items:
   $ref: data/posts.yml
 ```
 
-Accès dans le template de l'archive :
+Access in the archive template :
 ```twig
 <h1>{{ title }}</h1>
 {% for post in items %}
@@ -170,7 +151,7 @@ Accès dans le template de l'archive :
 {% endfor %}
 ```
 
-### Génération d'URLs (`path()`)
+### URL Generation (`path()`)
 
 ```twig
 {{ path('about') }}                   → /about
@@ -179,7 +160,7 @@ Accès dans le template de l'archive :
 {{ path('blog', {page: 2}) }}          → /blog/page/2
 ```
 
-### Accès aux données d'une autre route (`route()`)
+### Accessing data from another route (`route()`)
 
 ```twig
 {% set blog = route('blog') %}
@@ -202,25 +183,25 @@ items:
   $ref: data/posts.yml
 ```
 
-Génère `blog/index.html` (page 1) et `blog/page/{n}/index.html` (pages suivantes).
+Generates `blog/index.html` (page 1) and `blog/page/{n}/index.html` (subsequent pages).
 
 ```twig
 {% for post in items %}
   ...
 {% endfor %}
 {% if prevPage %}
-  <a href="{{ path('blog', {page: prevPage}) }}">← Précédent</a>
+  <a href="{{ path('blog', {page: prevPage}) }}">← Previous</a>
 {% endif %}
 {% if nextPage %}
-  <a href="{{ path('blog', {page: nextPage}) }}">Suivant →</a>
+  <a href="{{ path('blog', {page: nextPage}) }}">Next →</a>
 {% endif %}
 ```
 
 ### Validation
 
-- `{param}` ou `paginate` → `items` obligatoire
-- `data` est réservé aux métadonnées
-- Le `$ref` se met sur `items`, pas sur `data`
+- `{param}` or `paginate` → `items` is required
+- `data` is reserved for metadata
+- The `$ref` should be set to `items`, not `data`
 
 ## How it works
 
@@ -228,16 +209,6 @@ Génère `blog/index.html` (page 1) et `blog/page/{n}/index.html` (pages suivant
 - **Template deps**: `tmp/kiss/template-deps.php` traces dependencies between templates (extends/include/embed) for partial rebuilds.
 - **DataTree**: caches remote and local data sources as serialized PHP files.
 - **Watch**: `inotifywait` detects changes and recompiles only the impacted routes.
-
-## Tests
-
-```sh
-make tests                       # All tests
-make test -- --filter=testBuild  # Specific test
-make coverage                    # HTML report
-```
-
-Tests create temporary directories in `sys_get_temp_dir()/kiss-test-*` and clean them up automatically.
 
 ## License
 

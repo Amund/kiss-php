@@ -152,6 +152,35 @@ class Kiss
         return $this;
     }
 
+    public function init(?string $dir = null): self
+    {
+        $target = $dir !== null
+            ? Path::canonicalize(getcwd() . '/' . $dir)
+            : getcwd();
+
+        if (is_dir($target)) {
+            $files = array_diff(scandir($target), ['.', '..']);
+            if (!empty($files)) {
+                $this->error(
+                    $dir
+                        ? "Directory '$dir' is not empty"
+                        : 'Current directory is not empty'
+                );
+            }
+        }
+
+        $skel = __DIR__ . '/skel';
+        $fs = new Filesystem();
+        $fs->mirror($skel, $target);
+
+        $label = $dir ?? getcwd();
+        $this->log->ok('init', 'Site created');
+        $this->log->info('       ' . $label);
+        $this->log->info('       Run: kiss build');
+
+        return $this;
+    }
+
     public function route(string $arg = 'all')
     {
         $routePath = $this->config['path']['route'];

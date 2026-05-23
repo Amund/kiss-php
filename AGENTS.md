@@ -4,19 +4,11 @@ A PHP static site generator ("Keep It Simply Static"). Namespace `Kiss\`, entry 
 
 ## Dev environment
 
-Everything runs in Docker. All `make` commands exec into the `app` container.
+Requires PHP 8.2+ and `inotifywait` (Linux/WSL) or `fswatch` (macOS).
 
 ```sh
-make up              # start containers
-make down            # stop containers
-make shell           # bash inside app container
-make composer <args> # run composer commands
-```
-
-**Make arg caveat**: Make swallows flags like `-y`, `--version`. Use `--` to bypass:
-```sh
-make test -- --filter=testBuild   # correct
-make kiss -- --version            # correct
+php src/bin/kiss build    # build
+php src/bin/kiss watch    # watch for changes
 ```
 
 ## Commands
@@ -50,7 +42,7 @@ Env overrides: `KISS_DEBUG=true`, `KISS_VERBOSE=true` take precedence over confi
 - **Paths** (default): `copy/` → static files, `data/` → global data, `route/` → route definitions, `template/` → Twig templates, `web/` → output dist, `tmp/` → cache (resolved to `/tmp/kiss/<md5>/kiss`)
 - **Route types**: single page (`data` = contexte), param pages (`items` = liste, `data` = méta), pagination (`paginate` + `items`)
 - **Data sources**: yaml/json/php/xml/ini/md files in `data/`, available as `{{ global.* }}` in Twig. Markdown files are parsed for frontmatter (`---` delimited YAML) and body (`content` key). Routes can use `$ref` to reference external data files.
-- **Watch mode**: `make kiss -- watch`, uses `inotifywait` (host tool, not in Docker)
+- **Watch mode**: `php src/bin/kiss watch`, uses `inotifywait` (Linux/WSL) or `fswatch` (macOS)
 - **Route manifest**: cached in `tmp/kiss/route-manifest.php` to track which files each route generated; stale files are cleaned on rebuild
 - **Template deps**: `TemplateDeps` tracks which templates each route uses for partial rebuilds
 - **URL generation**: `path(routeName, params)` Twig function via `UrlGenerator`
