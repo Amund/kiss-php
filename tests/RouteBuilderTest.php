@@ -83,7 +83,7 @@ final class RouteBuilderTest extends TestCase
         mkdir($path, 0777, true);
         file_put_contents(
             $path . '/' . $name . '.yml',
-            "path: /{slug}.html\ntemplate: $name.twig\ndata:\n  - slug: hello\n    name: World"
+            "path: /{slug}.html\ntemplate: $name.twig\nitems:\n  - slug: hello\n    name: World"
         );
         $ds = new DataSource($path . '/' . $name . '.yml');
         return new Route($name, $ds);

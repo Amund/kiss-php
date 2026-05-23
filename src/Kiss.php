@@ -23,6 +23,7 @@ class Kiss
     public string $root = '';
     public ?Log $log = null;
     private ?Environment $twig = null;
+    private ?TwigExtension $twigExtension = null;
     public array $config = [
         'path' => [
             'copy' => 'copy',
@@ -132,7 +133,8 @@ class Kiss
         $this->twig = new Environment($twigLoader, [
             'debug' => $this->config['debug'],
         ]);
-        $this->twig->addExtension(new TwigExtension());
+        $this->twigExtension = new TwigExtension();
+        $this->twig->addExtension($this->twigExtension);
 
         return $this;
     }
@@ -163,6 +165,12 @@ class Kiss
         ]);
 
         $collection = new RouteCollection($routePath);
+
+        $this->twigExtension?->setUrlGenerator(
+            new UrlGenerator($collection)
+        );
+        $this->twigExtension?->setRouteCollection($collection);
+        $this->twigExtension?->setDataTree($tree);
 
         if ($collection->getCount() === 0) {
             $this->log->fail('route', 'no routes to build');

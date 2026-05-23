@@ -48,11 +48,15 @@ Env overrides: `KISS_DEBUG=true`, `KISS_VERBOSE=true` take precedence over confi
 
 - **Entry**: `kiss.yml` (or any supported ext in `Config::EXTENSIONS`)
 - **Paths** (default): `copy/` → static files, `data/` → global data, `route/` → route definitions, `template/` → Twig templates, `web/` → output dist, `tmp/` → cache (resolved to `/tmp/kiss/<md5>/kiss`)
-- **Route types**: `page` (single output), `blog` (path params like `{slug}`)
+- **Route types**: single page (`data` = contexte), param pages (`items` = liste, `data` = méta), pagination (`paginate` + `items`)
 - **Data sources**: yaml/json/php/xml/ini/md files in `data/`, available as `{{ global.* }}` in Twig. Markdown files are parsed for frontmatter (`---` delimited YAML) and body (`content` key). Routes can use `$ref` to reference external data files.
 - **Watch mode**: `make kiss -- watch`, uses `inotifywait` (host tool, not in Docker)
 - **Route manifest**: cached in `tmp/kiss/route-manifest.php` to track which files each route generated; stale files are cleaned on rebuild
 - **Template deps**: `TemplateDeps` tracks which templates each route uses for partial rebuilds
+- **URL generation**: `path(routeName, params)` Twig function via `UrlGenerator`
+- **Cross-route data**: `route(routeName)` Twig function returns resolved `data + items`
+- **Pagination**: `paginate` property on route, outputs `{path}/index.html` + `{path}/page/{n}/index.html`
+- **items**: mandatory when path has `{params}` or `paginate`; `data` is metadata only
 
 ## Testing quirks
 

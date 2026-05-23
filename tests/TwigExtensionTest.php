@@ -56,12 +56,59 @@ final class TwigExtensionTest extends TestCase
         $this->assertStringContainsString('hello', $result);
     }
 
-    public function testGetFunctionsReturnsDumpFunction()
+    public function testGetFunctionsReturnsExpectedFunctions()
     {
         $extension = new TwigExtension();
         $functions = $extension->getFunctions();
 
-        $this->assertCount(1, $functions);
-        $this->assertSame('dump', $functions[0]->getName());
+        $names = array_map(fn($f) => $f->getName(), $functions);
+        $this->assertContains('dump', $names);
+        $this->assertContains('path', $names);
+        $this->assertContains('route', $names);
+    }
+
+    public function testRouteReturnsEmptyForUnknownRoute()
+    {
+        $dir = sys_get_temp_dir() . '/kiss-test-twig-ext-' . uniqid();
+        mkdir($dir, 0777, true);
+
+        $collection = new RouteCollection($dir);
+        $tree = new DataTree(['cache' => $dir . '/cache']);
+
+        $extension = new TwigExtension();
+        $extension->setRouteCollection($collection);
+        $extension->setDataTree($tree);
+
+        $this->assertSame([], $extension->getRoute('nonexistent'));
+
+        rmdir($dir);
+    }
+
+    public function testRouteReturnsResolvedData()
+    {
+        $dir = sys_get_temp_dir() . '/kiss-test-twig-ext-' . uniqid();
+        mkdir($dir, 0777, true);
+
+        file_put_contents(
+            $dir . '/blog.yml',
+            "path: /{slug}.html\ntemplate: post.twig\ndata:\n" .
+            "  - slug: hello\n    title: Hello\n  - slug: world\n    title: World"
+        );
+
+        $collection = new RouteCollection($dir);
+        $tree = new DataTree(['cache' => $dir . '/cache']);
+
+        $extension = new TwigExtension();
+        $extension->setRouteCollection($collection);
+        $extension->setDataTree($tree);
+
+        $data = $extension->getRoute('blog');
+        $this->assertCount(2, $data);
+        $this->assertSame('hello', $data[0]['slug']);
+        $this->assertSame('World', $data[1]['title']);
+
+        $tree->clear();
+        array_map('unlink', glob($dir . '/*'));
+        rmdir($dir);
     }
 }

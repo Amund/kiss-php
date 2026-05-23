@@ -14,6 +14,25 @@ use Symfony\Component\VarDumper\Dumper\HtmlDumper;
 
 class TwigExtension extends AbstractExtension
 {
+    private ?UrlGenerator $urlGenerator = null;
+    private ?RouteCollection $routeCollection = null;
+    private ?DataTree $dataTree = null;
+
+    public function setUrlGenerator(UrlGenerator $generator): void
+    {
+        $this->urlGenerator = $generator;
+    }
+
+    public function setRouteCollection(RouteCollection $collection): void
+    {
+        $this->routeCollection = $collection;
+    }
+
+    public function setDataTree(DataTree $tree): void
+    {
+        $this->dataTree = $tree;
+    }
+
     public function getFilters(): array
     {
         return [
@@ -42,7 +61,42 @@ class TwigExtension extends AbstractExtension
                     'is_variadic' => true,
                 ]
             ),
+            new TwigFunction(
+                'path',
+                [$this, 'getPath'],
+            ),
+            new TwigFunction(
+                'route',
+                [$this, 'getRoute'],
+            ),
         ];
+    }
+
+    public function getPath(string $name, array $params = []): string
+    {
+        if ($this->urlGenerator === null) {
+            throw new \RuntimeException(
+                'UrlGenerator not set on TwigExtension'
+            );
+        }
+        return $this->urlGenerator->path($name, $params);
+    }
+
+    public function getRoute(string $name): array
+    {
+        if ($this->routeCollection === null || $this->dataTree === null) {
+            throw new \RuntimeException(
+                'RouteCollection and DataTree must be set on TwigExtension'
+            );
+        }
+
+        $route = $this->routeCollection->get($name);
+        if ($route === null) {
+            return [];
+        }
+
+        $data = $route->getResolvedData($this->dataTree);
+        return is_array($data) ? $data : [];
     }
 
     public function twigVarDump(Environment $env, $context, ...$vars)

@@ -115,7 +115,7 @@ The frontmatter fields are available directly, and the body is available as `con
 
 ## Routes
 
-### Single page
+### Page unique
 
 `route/index.yml`:
 ```yaml
@@ -125,27 +125,102 @@ data:
   title: Home
 ```
 
-### Multiple pages with parameters
+### Pages avec paramètres (`items`)
 
 `route/blog.yml`:
 ```yaml
 path: /{slug}.html
 template: post.twig
 data:
+  blog_title: "Mon Blog"
+items:
   - slug: hello-world
     title: Hello World
   - slug: second-article
     title: Second article
 ```
 
-### External reference ($ref)
+Chaque item génère une page. `data` contient les métadonnées, mergées dans chaque page enfant.
+
+### Référence externe (`$ref`)
 
 ```yaml
 path: /{slug}.html
 template: post.twig
-data:
+items:
   $ref: data/articles.yml
 ```
+
+### Page d'archive + liste
+
+```yaml
+path: /blog
+template: blog_list.twig
+data:
+  title: "Blog"
+items:
+  $ref: data/posts.yml
+```
+
+Accès dans le template de l'archive :
+```twig
+<h1>{{ title }}</h1>
+{% for post in items %}
+  <a href="{{ path('blog', {slug: post.slug}) }}">{{ post.title }}</a>
+{% endfor %}
+```
+
+### Génération d'URLs (`path()`)
+
+```twig
+{{ path('about') }}                   → /about
+{{ path('blog', {slug: 'hello'}) }}   → /hello.html
+{{ path('blog') }}                     → /blog (page 1)
+{{ path('blog', {page: 2}) }}          → /blog/page/2
+```
+
+### Accès aux données d'une autre route (`route()`)
+
+```twig
+{% set blog = route('blog') %}
+<h1>{{ blog.title }}</h1>
+{% for post in blog.items %}
+  ...
+{% endfor %}
+```
+
+### Pagination
+
+`route/blog.yml`:
+```yaml
+path: /blog
+template: blog_list.twig
+paginate: 10
+data:
+  title: "Archives"
+items:
+  $ref: data/posts.yml
+```
+
+Génère `blog/index.html` (page 1) et `blog/page/{n}/index.html` (pages suivantes).
+
+```twig
+{% for post in items %}
+  ...
+{% endfor %}
+{% if prevPage %}
+  <a href="{{ path('blog', {page: prevPage}) }}">← Précédent</a>
+{% endif %}
+{% if nextPage %}
+  <a href="{{ path('blog', {page: nextPage}) }}">Suivant →</a>
+{% endif %}
+```
+
+### Validation
+
+- `{param}` ou `paginate` → `items` obligatoire
+- `data` est réservé aux métadonnées
+- Le `$ref` se met sur `items`, pas sur `data`
 
 ## How it works
 
@@ -162,7 +237,7 @@ make test -- --filter=testBuild  # Specific test
 make coverage                    # HTML report
 ```
 
-Tests create temporary directories in `sys_get_temp_dir()/kiss-test-*` and clean them up automatically. All tests are unit tests (no integration tests).
+Tests create temporary directories in `sys_get_temp_dir()/kiss-test-*` and clean them up automatically.
 
 ## License
 

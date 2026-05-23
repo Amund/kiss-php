@@ -416,7 +416,7 @@ final class KissTest extends TestCase
 
         file_put_contents(
             $kiss->config['path']['route'] . '/blog.yml',
-            "path: /{slug}.html\ntemplate: post.twig\ndata:\n" .
+            "path: /{slug}.html\ntemplate: post.twig\nitems:\n" .
             "  - slug: hello\n    title: Hello\n  - slug: world\n    title: World"
         );
 
@@ -428,6 +428,58 @@ final class KissTest extends TestCase
         $this->assertStringContainsString(
             'Hello',
             file_get_contents($dist . '/hello.html')
+        );
+    }
+
+    public function testRouteWithPathAndRouteDataFunctions()
+    {
+        $dir = $this->makeTempDir();
+        mkdir($dir . '/template', 0777, true);
+        file_put_contents(
+            $dir . '/template/post.twig',
+            '{{ title }} — <a href="{{ path(\'blog_index\') }}">Back</a>'
+        );
+        file_put_contents(
+            $dir . '/template/index.twig',
+            '{% for post in route(\'blog\').items %}' .
+            '<a href="{{ path(\'blog\', {slug: post.slug}) }}">{{ post.title }}</a>' .
+            '{% endfor %}'
+        );
+
+        $kiss = new Kiss($dir);
+        $kiss->config();
+        $kiss->warmup();
+        $kiss->log->silent = true;
+
+        file_put_contents(
+            $kiss->config['path']['route'] . '/blog.yml',
+            "path: /{slug}.html\ntemplate: post.twig\nitems:\n" .
+            "  - slug: hello\n    title: Hello\n  - slug: world\n    title: World"
+        );
+        file_put_contents(
+            $kiss->config['path']['route'] . '/blog_index.yml',
+            "path: /blog\ntemplate: index.twig"
+        );
+
+        $kiss->route();
+
+        $dist = $kiss->config['path']['dist'];
+
+        $this->assertFileExists($dist . '/hello.html');
+        $this->assertStringContainsString(
+            '<a href="/blog">Back</a>',
+            file_get_contents($dist . '/hello.html')
+        );
+
+        $this->assertFileExists($dist . '/blog');
+        $html = file_get_contents($dist . '/blog');
+        $this->assertStringContainsString(
+            '<a href="/hello.html">Hello</a>',
+            $html
+        );
+        $this->assertStringContainsString(
+            '<a href="/world.html">World</a>',
+            $html
         );
     }
 
@@ -485,7 +537,7 @@ final class KissTest extends TestCase
 
         file_put_contents(
             $kiss->config['path']['route'] . '/page.yml',
-            "path: /{name}.html\ntemplate: page.twig\ndata:\n  \$ref: " . $refDir . "/people.yml"
+            "path: /{name}.html\ntemplate: page.twig\nitems:\n  \$ref: " . $refDir . "/people.yml"
         );
 
         $kiss->route();
@@ -626,6 +678,109 @@ final class KissTest extends TestCase
             'MySite',
             file_get_contents($kiss->config['path']['dist'] . '/index.html')
         );
+    }
+
+    public function testRouteWithPagination()
+    {
+        $dir = $this->makeTempDir();
+        mkdir($dir . '/template', 0777, true);
+        file_put_contents(
+            $dir . '/template/blog.twig',
+            '{% for item in items %}' .
+            '{{ item.title }}|' .
+            '{% endfor %}' .
+            'page{{ page }}/{{ totalPages }}'
+        );
+
+        $kiss = new Kiss($dir);
+        $kiss->config();
+        $kiss->warmup();
+        $kiss->log->silent = true;
+
+        file_put_contents(
+            $kiss->config['path']['route'] . '/blog.yml',
+            "path: /blog\ntemplate: blog.twig\npaginate: 2\nitems:\n" .
+            "  - slug: a\n    title: A\n  - slug: b\n    title: B\n" .
+            "  - slug: c\n    title: C"
+        );
+
+        $kiss->route();
+
+        $dist = $kiss->config['path']['dist'];
+
+        $this->assertFileExists($dist . '/blog/index.html');
+        $html1 = file_get_contents($dist . '/blog/index.html');
+        $this->assertStringContainsString('A|B|', $html1);
+        $this->assertStringContainsString('page1/2', $html1);
+
+        $this->assertFileExists($dist . '/blog/page/2/index.html');
+        $html2 = file_get_contents($dist . '/blog/page/2/index.html');
+        $this->assertStringContainsString('C|', $html2);
+        $this->assertStringContainsString('page2/2', $html2);
+    }
+
+    public function testRouteWithPaginationAndRouteData()
+    {
+        $dir = $this->makeTempDir();
+        mkdir($dir . '/template', 0777, true);
+        file_put_contents(
+            $dir . '/template/post.twig',
+            '{{ title }}'
+        );
+        file_put_contents(
+            $dir . '/template/blog.twig',
+            '{% for item in items %}' .
+            '<a href="{{ path(\'post\', {slug: item.slug}) }}">{{ item.title }}</a>' .
+            '{% endfor %}' .
+            '{% if nextPage %}' .
+            '<a href="{{ path(\'blog\', {page: nextPage}) }}">Next</a>' .
+            '{% endif %}'
+        );
+
+        $kiss = new Kiss($dir);
+        $kiss->config();
+        $kiss->warmup();
+        $kiss->log->silent = true;
+
+        file_put_contents(
+            $kiss->config['path']['route'] . '/post.yml',
+            "path: /{slug}.html\ntemplate: post.twig\nitems:\n" .
+            "  - slug: a\n    title: A\n  - slug: b\n    title: B\n" .
+            "  - slug: c\n    title: C"
+        );
+        file_put_contents(
+            $kiss->config['path']['route'] . '/blog.yml',
+            "path: /blog\ntemplate: blog.twig\npaginate: 2\nitems:\n" .
+            "  - slug: a\n    title: A\n  - slug: b\n    title: B\n" .
+            "  - slug: c\n    title: C"
+        );
+
+        $kiss->route();
+
+        $dist = $kiss->config['path']['dist'];
+
+        $this->assertFileExists($dist . '/blog/index.html');
+        $html1 = file_get_contents($dist . '/blog/index.html');
+        $this->assertStringContainsString(
+            '<a href="/a.html">A</a>',
+            $html1
+        );
+        $this->assertStringContainsString(
+            '<a href="/b.html">B</a>',
+            $html1
+        );
+        $this->assertStringContainsString(
+            '<a href="/blog/page/2">Next</a>',
+            $html1
+        );
+
+        $this->assertFileExists($dist . '/blog/page/2/index.html');
+        $html2 = file_get_contents($dist . '/blog/page/2/index.html');
+        $this->assertStringContainsString(
+            '<a href="/c.html">C</a>',
+            $html2
+        );
+        $this->assertStringNotContainsString('Next', $html2);
     }
 
     private function makeTempDir(): string
