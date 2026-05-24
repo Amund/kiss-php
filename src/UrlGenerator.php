@@ -25,7 +25,7 @@ class UrlGenerator
             unset($params['page']);
             $path = $page === 1
                 ? $route->path
-                : $route->path . '/page/' . $page;
+                : self::cleanIndex($route->path) . '/page/' . $page;
         }
 
         if (empty($params)) {
@@ -34,7 +34,7 @@ class UrlGenerator
                     "Route '$name' requires parameters: " . $this->extractParamNames($route->path)
                 );
             }
-            return $path;
+            return self::cleanIndex($path);
         }
 
         foreach ($params as $key => $value) {
@@ -47,12 +47,23 @@ class UrlGenerator
             );
         }
 
-        return $path;
+        return self::cleanIndex($path);
     }
 
     private function extractParamNames(string $path): string
     {
         preg_match_all(Route::PARAMS_MATCHER, $path, $matches);
         return implode(', ', array_map(fn($m) => '{' . $m . '}', $matches[1]));
+    }
+
+    private static function cleanIndex(string $path): string
+    {
+        if (str_ends_with($path, '/index.html')) {
+            $path = substr($path, 0, -11);
+            if ($path === '') {
+                $path = '/';
+            }
+        }
+        return $path;
     }
 }

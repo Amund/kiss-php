@@ -169,4 +169,40 @@ final class UrlGeneratorTest extends TestCase
         $this->assertSame('/blog', $generator->path('blog', ['page' => 0]));
         $this->assertSame('/blog', $generator->path('blog', ['page' => -1]));
     }
+
+    public function testPathWithIndexHtmlReturnsSlash(): void
+    {
+        file_put_contents(
+            $this->tempDir . '/index.yml',
+            "path: /index.html\ntemplate: page.twig\n"
+        );
+        $collection = new RouteCollection($this->tempDir);
+        $generator = new UrlGenerator($collection);
+
+        $this->assertSame('/', $generator->path('index'));
+    }
+
+    public function testPathWithSubdirIndexHtml(): void
+    {
+        file_put_contents(
+            $this->tempDir . '/blog.yml',
+            "path: /blog/index.html\ntemplate: blog.twig\n"
+        );
+        $collection = new RouteCollection($this->tempDir);
+        $generator = new UrlGenerator($collection);
+
+        $this->assertSame('/blog', $generator->path('blog'));
+    }
+
+    public function testPathWithRegularHtmlUnchanged(): void
+    {
+        file_put_contents(
+            $this->tempDir . '/about.yml',
+            "path: /about.html\ntemplate: page.twig\n"
+        );
+        $collection = new RouteCollection($this->tempDir);
+        $generator = new UrlGenerator($collection);
+
+        $this->assertSame('/about.html', $generator->path('about'));
+    }
 }
