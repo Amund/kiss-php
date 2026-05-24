@@ -276,27 +276,27 @@ final class KissTest extends TestCase
     public function testConfigWithEnvDebugOverrides()
     {
         $dir = $this->makeTempDir();
-        $_ENV['KISS_DEBUG'] = 'true';
+        putenv('KISS_DEBUG=true');
         file_put_contents($dir . '/kiss.yml', "debug: false\n");
 
         $kiss = new Kiss($dir);
         $kiss->config();
 
         $this->assertSame(true, $kiss->config['debug']);
-        unset($_ENV['KISS_DEBUG']);
+        putenv('KISS_DEBUG');
     }
 
     public function testConfigWithEnvVerboseOverrides()
     {
         $dir = $this->makeTempDir();
-        $_ENV['KISS_VERBOSE'] = 'true';
+        putenv('KISS_VERBOSE=true');
         file_put_contents($dir . '/kiss.yml', "log:\n  verbose: false\n");
 
         $kiss = new Kiss($dir);
         $kiss->config();
 
         $this->assertSame(true, $kiss->config['log']['verbose']);
-        unset($_ENV['KISS_VERBOSE']);
+        putenv('KISS_VERBOSE');
     }
 
     public function testCopySingleFile()

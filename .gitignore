@@ -1,10 +1,10 @@
 /copy
 /coverage
 /data
+/docs
 /route
 /template
 /tmp
 /vendor
 /web
-/.env
 /kiss.phar

@@ -1,6 +1,7 @@
 {
-  "[php]": {
-    "editor.formatOnSave": true
-  },
-  "intelephense.completion.fullyQualifyGlobalConstantsAndFunctions": true
+	"[php]": {
+		"editor.formatOnSave": true
+	},
+	"intelephense.completion.fullyQualifyGlobalConstantsAndFunctions": true,
+	"livePreview.serverRoot": "docs"
 }

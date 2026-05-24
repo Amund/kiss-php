@@ -1,0 +1,30 @@
+path: /index.html
+template: page.twig
+data:
+  title: Accueil
+  sections:
+    - title: Installation
+      content: |
+        ```sh
+        composer global require amund/kiss-php
+        kiss init mon-site
+        cd mon-site
+        kiss build
+        ```
+    - title: Commandes
+      content: |
+        | Commande | Description |
+        |---|---|
+        | `kiss init` | Crée un nouveau site |
+        | `kiss build` | Build le site complet |
+        | `kiss watch` | Build + watch |
+        | `kiss route` | Liste ou rebuild des routes |
+    - title: Fonctionnalités
+      content: |
+        - **`items`** — propriété dédiée pour les pages enfants
+        - **`path()`** — génération d'URLs entre routes
+        - **`route()`** — accès aux données d'une autre route
+        - **`asset()`** — URLs signées (cache busting)
+        - **`paginate`** — pagination automatique
+    - title: Licence
+      content: MIT

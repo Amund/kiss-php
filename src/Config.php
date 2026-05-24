@@ -38,6 +38,10 @@ class Config
         $this->root = empty($this->root)
             ? ''
             : $this->root . \DIRECTORY_SEPARATOR;
+        $dir = dirname($entry);
+        if ($dir !== '.') {
+            $this->root .= $dir . \DIRECTORY_SEPARATOR;
+        }
         $this->basename = pathinfo($entry, PATHINFO_FILENAME);
     }
 
@@ -60,13 +64,13 @@ class Config
             DataSource::saveYaml($entry, $this->config);
         }
 
-        if (\array_key_exists('KISS_DEBUG', $_ENV)) {
-            $this->config['debug'] = Tools::truthy($_ENV['KISS_DEBUG']);
+        $debug = getenv('KISS_DEBUG');
+        if ($debug !== false) {
+            $this->config['debug'] = Tools::truthy($debug);
         }
-        if (\array_key_exists('KISS_VERBOSE', $_ENV)) {
-            $this->config['log']['verbose'] = Tools::truthy(
-                $_ENV['KISS_VERBOSE']
-            );
+        $verbose = getenv('KISS_VERBOSE');
+        if ($verbose !== false) {
+            $this->config['log']['verbose'] = Tools::truthy($verbose);
         }
 
         $this->resolvePaths();

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }} — {{ global.site.name }}</title>
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>{{ global.site.name }}</h1>
+        <p class="tagline">{{ global.site.tagline }}</p>
+        <nav>
+            <a href="{{ path('index') }}">Accueil</a>
+            <a href="{{ path('docs') }}">Documentation</a>
+            <a href="{{ global.site.github }}">GitHub</a>
+        </nav>
+    </header>
+
+    <main>
+        <h2>{{ title }}</h2>
+
+        {% for section in sections %}
+        <section>
+            <h3>{{ section.title }}</h3>
+            {{ section.content|markdown|raw }}
+        </section>
+        {% endfor %}
+    </main>
+
+    <footer>
+        <p>{{ global.site.name }} v{{ global.site.version }} — {{ global.site.description }}</p>
+    </footer>
+</body>
+</html>

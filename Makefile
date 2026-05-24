@@ -2,7 +2,7 @@ PHP_VERSION ?= 8.2
 PHP = docker run --rm -t -v $(PWD):/app -w /app php:$(PHP_VERSION)-cli
 COMPOSER = docker run --rm -t -e COMPOSER_COLOR=1 -v $(PWD):/app -w /app composer:2
 
-.PHONY: tests test phpcs phpstan coverage phar tag shell
+.PHONY: tests test phpcs phpstan coverage phar docs docs-watch tag shell
 
 install:
 	@$(COMPOSER) install
@@ -35,6 +35,13 @@ phar:
 	 mv -f kiss.phar $(HOME)/.local/bin/kiss && \
 	 chmod +x $(HOME)/.local/bin/kiss && \
 	 echo "Installed: $(HOME)/.local/bin/kiss"
+
+docs:
+	@KISS_ENTRY=doc-site/kiss.yml kiss build
+	@echo "Docs generated in docs/"
+
+docs-watch:
+	@KISS_ENTRY=doc-site/kiss.yml kiss watch
 
 tag:
 	@VERSION=$$(jq -r '.version' composer.json); \

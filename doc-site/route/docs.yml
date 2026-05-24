@@ -1,0 +1,53 @@
+path: /docs.html
+template: page.twig
+data:
+  title: Documentation
+  sections:
+    - title: Routes
+      content: |
+        Une route se définit dans `route/` avec `path` et `template`.
+
+        ```yaml
+        path: /{slug}.html
+        template: post.twig
+        data:
+          blog_title: Mon Blog
+        items:
+          - slug: hello
+            title: Hello World
+        ```
+    - title: Liens entre pages
+      content: |
+        ```twig
+        {{ path('about') }}
+        {{ path('blog', {slug: 'hello'}) }}
+        {{ path('blog', {page: 2}) }}
+        ```
+    - title: Données croisées
+      content: |
+        ```twig
+        {% set blog = route('blog') %}
+        <h1>{{ blog.title }}</h1>
+        {% for post in blog.items %}
+          <a href="{{ path('blog', {slug: post.slug}) }}">
+            {{ post.title }}
+          </a>
+        {% endfor %}
+        ```
+    - title: Pagination
+      content: |
+        ```yaml
+        path: /blog
+        template: blog_list.twig
+        paginate: 10
+        data:
+          title: Archives
+        items:
+          $ref: data/posts.yml
+        ```
+    - title: Assets signés
+      content: |
+        ```twig
+        <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+        <!-- → /css/style.css?v=crc32c_hash -->
+        ```

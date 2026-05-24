@@ -1,0 +1,24 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+    paths: ['doc-site/**', 'src/**', 'composer.*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          tools: composer
+      - run: composer install --no-dev --no-interaction --quiet
+      - run: php src/bin/kiss build
+        working-directory: doc-site
+      - run: touch ../docs/.nojekyll
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs

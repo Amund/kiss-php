@@ -69,7 +69,8 @@ class Kiss
 
     public function config()
     {
-        $config = new Config($this->root, $this->entry);
+        $entry = getenv('KISS_ENTRY') ?: $this->entry;
+        $config = new Config($this->root, $entry);
         $config->load();
         $this->config = $config->toArray();
         $this->log = new Log($this->config['log']);
