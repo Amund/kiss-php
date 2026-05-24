@@ -18,6 +18,7 @@ class TwigExtension extends AbstractExtension
     private ?RouteCollection $routeCollection = null;
     private ?DataTree $dataTree = null;
     private string $copyPath = '';
+    private string $baseUrl = '';
 
     public function setUrlGenerator(UrlGenerator $generator): void
     {
@@ -37,6 +38,11 @@ class TwigExtension extends AbstractExtension
     public function setCopyPath(string $path): void
     {
         $this->copyPath = $path;
+    }
+
+    public function setBaseUrl(string $url): void
+    {
+        $this->baseUrl = rtrim($url, '/');
     }
 
     public function getFilters(): array
@@ -89,7 +95,7 @@ class TwigExtension extends AbstractExtension
                 'UrlGenerator not set on TwigExtension'
             );
         }
-        return $this->urlGenerator->path($name, $params);
+        return $this->baseUrl . $this->urlGenerator->path($name, $params);
     }
 
     public function getRoute(string $name): array
@@ -112,10 +118,11 @@ class TwigExtension extends AbstractExtension
     public function getAsset(string $path): string
     {
         $file = rtrim($this->copyPath, '/') . '/' . ltrim($path, '/');
+        $url = '/' . ltrim($path, '/');
         if (is_file($file)) {
-            return '/' . ltrim($path, '/') . '?v=' . hash_file('crc32c', $file);
+            $url .= '?v=' . hash_file('crc32c', $file);
         }
-        return '/' . ltrim($path, '/');
+        return $this->baseUrl . $url;
     }
 
     public function twigVarDump(Environment $env, $context, ...$vars)

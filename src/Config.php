@@ -72,6 +72,10 @@ class Config
         if ($verbose !== false) {
             $this->config['log']['verbose'] = Tools::truthy($verbose);
         }
+        $baseUrl = getenv('KISS_BASE_URL');
+        if ($baseUrl !== false) {
+            $this->config['base_url'] = rtrim($baseUrl, '/');
+        }
 
         $this->resolvePaths();
     }

@@ -3,11 +3,13 @@ name: Docs
 on:
   push:
     branches: [main]
-    paths: ['doc-site/**', 'src/**', 'composer.*']
+    paths: ['doc-site/**', '.github/**']
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -15,9 +17,10 @@ jobs:
           php-version: 8.2
           tools: composer
       - run: composer install --no-dev --no-interaction --quiet
-      - run: php src/bin/kiss build
-        working-directory: doc-site
-      - run: touch ../docs/.nojekyll
+      - run: php $GITHUB_WORKSPACE/src/bin/kiss build
+        env:
+          KISS_ENTRY: doc-site/kiss.yml
+          KISS_BASE_URL: /kiss-php
       - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

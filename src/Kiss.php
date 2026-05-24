@@ -42,6 +42,7 @@ class Kiss
             ],
         ],
         'debug' => false,
+        'base_url' => '',
     ];
 
     public function __construct(string $root = '')
@@ -137,6 +138,9 @@ class Kiss
         $this->twigExtension = new TwigExtension();
         $this->twig->addExtension($this->twigExtension);
         $this->twigExtension->setCopyPath($this->config['path']['copy']);
+        if (!empty($this->config['base_url'])) {
+            $this->twigExtension->setBaseUrl($this->config['base_url']);
+        }
 
         return $this;
     }
