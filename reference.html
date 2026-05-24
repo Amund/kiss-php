@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Reference - 💋Kiss</title>
-    <link rel="stylesheet" href="/kiss-php/css/style.css?v=35681514">
+    <link rel="stylesheet" href="/kiss-php/css/style.css?v=a7b9048b">
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -44,8 +44,17 @@
 
     <main><h2>Reference</h2>
 
+<ul class="toc">
+  <li><a href="#twig-functions">Twig functions</a></li>
+  <li><a href="#twig-filters">Twig filters</a></li>
+  <li><a href="#data-sources">Data sources</a></li>
+  <li><a href="#caching">Caching</a></li>
+  <li><a href="#markdown">Markdown</a></li>
+  <li><a href="#cli-commands">CLI commands</a></li>
+</ul>
+
 <section>
-    <h3>Twig functions</h3>
+    <h3 id="twig-functions">Twig functions</h3>
         <h3><code>path(name, params)</code></h3>
 <p>Generates URLs between routes :</p>
 <pre><code class="language-twig">{{ path('about') }}                          → /about
@@ -78,15 +87,20 @@
 
             </section>
 <section>
-    <h3>Twig filters</h3>
+    <h3 id="twig-filters">Twig filters</h3>
         <h3><code>markdown</code></h3>
 <p>Converts Markdown to HTML via league/commonmark (GFM) :</p>
 <pre><code class="language-twig">{{ content|markdown|raw }}
 </code></pre>
+<h3><code>slugify</code></h3>
+<p>Converts a string into a URL-safe slug :</p>
+<pre><code class="language-twig">{{ 'Hello World'|slugify }}    → hello-world
+{{ section.title|slugify }}     → ma-section
+</code></pre>
 
             </section>
 <section>
-    <h3>Data sources</h3>
+    <h3 id="data-sources">Data sources</h3>
         <p>Files in <code>data/</code> are loaded automatically and accessible via <code>{{ global.* }}</code>.</p>
 <p>Supported formats : YAML, JSON, PHP, XML, INI, Markdown.</p>
 <p><code>data/site.yml</code> :</p>
@@ -121,7 +135,8 @@ tagline: Great static site
 return [
   &#039;name&#039; =&gt; &#039;My Site&#039;,
   &#039;tagline&#039; =&gt; &#039;Great static site&#039;,
-];</code></pre>
+];
+</code></pre>
         </div>
             <input type="radio" name="tab-3"
                id="tab-3-4"
@@ -132,7 +147,8 @@ return [
 &lt;root&gt;
   &lt;name&gt;My Site&lt;/name&gt;
   &lt;tagline&gt;Great static site&lt;/tagline&gt;
-&lt;/root&gt;</code></pre>
+&lt;/root&gt;
+</code></pre>
         </div>
             <input type="radio" name="tab-3"
                id="tab-3-5"
@@ -140,12 +156,39 @@ return [
         <label for="tab-3-5">INI</label>
         <div class="tab-content">
 <pre><code class="language-ini">name = My Site
-tagline = Great static site</code></pre>
+tagline = Great static site
+</code></pre>
         </div>
         </div>
     </section>
 <section>
-    <h3>Markdown</h3>
+    <h3 id="caching">Caching</h3>
+        <p>Every data source is transformed into a PHP file and cached in
+<code>/tmp/kiss/&lt;hash&gt;/datatree/</code>.</p>
+<p><strong>How it works :</strong></p>
+<ol>
+<li>A <code>.yml</code>, <code>.json</code>, <code>.xml</code>, <code>.ini</code>, <code>.md</code> or <code>.php</code> file is loaded</li>
+<li>The appropriate loader parses it (YamlLoader, JsonLoader, etc.)</li>
+<li>The result is serialized as a PHP file via <code>var_export()</code> and stored</li>
+<li>On subsequent builds, the cached PHP is included — no parsing needed</li>
+<li>When the source file changes, the cache is invalidated</li>
+</ol>
+<p><strong>Same mechanism for <code>$ref</code> and remote files :</strong></p>
+<pre><code class="language-yaml">items:
+  $ref: https://api.example.com/posts.json
+</code></pre>
+<p>URLs are fetched once, cached as PHP, and served from cache on rebuilds
+until the resource changes.</p>
+<p><strong>Cache invalidation :</strong></p>
+<ul>
+<li><code>kiss reset cache</code> removes all cached files</li>
+<li><code>DataTree::invalidate(source)</code> removes a single entry</li>
+<li>Automatic when the source file's CRC32C changes</li>
+</ul>
+
+            </section>
+<section>
+    <h3 id="markdown">Markdown</h3>
         <pre><code class="language-markdown">---
 title: My Article
 date: 2024-01-01
@@ -159,7 +202,7 @@ Content **markdown** here.
 
             </section>
 <section>
-    <h3>CLI commands</h3>
+    <h3 id="cli-commands">CLI commands</h3>
         <table>
 <thead>
 <tr>
@@ -203,7 +246,7 @@ Content **markdown** here.
 </main>
 
     <footer>
-        <p><a href="https://github.com/amund/kiss-php">💋Kiss v0.2.3</a> - Kiss (Keep It Simply Static) is a php static site generator.</p>
+        <p><a href="https://github.com/amund/kiss-php">💋Kiss v0.2.4</a> - Kiss (Keep It Simply Static) is a php static site generator.</p>
     </footer>
 </body>
 </html>

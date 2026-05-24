@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Development - 💋Kiss</title>
-    <link rel="stylesheet" href="/kiss-php/css/style.css?v=35681514">
+    <link rel="stylesheet" href="/kiss-php/css/style.css?v=a7b9048b">
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -44,8 +44,14 @@
 
     <main><h2>Development</h2>
 
+<ul class="toc">
+  <li><a href="#setup">Setup</a></li>
+  <li><a href="#commands">Commands</a></li>
+  <li><a href="#documentation-site">Documentation site</a></li>
+</ul>
+
 <section>
-    <h3>Setup</h3>
+    <h3 id="setup">Setup</h3>
         <p>Clone the repository and install dependencies :</p>
 <pre><code class="language-sh">git clone https://github.com/amund/kiss-php
 cd kiss-php
@@ -58,7 +64,7 @@ make tests      # PHPUnit
 
             </section>
 <section>
-    <h3>Commands</h3>
+    <h3 id="commands">Commands</h3>
         <table>
 <thead>
 <tr>
@@ -106,7 +112,7 @@ daemons, no docker-compose. Images used : <code>php:8.2-cli</code> and <code>com
 
             </section>
 <section>
-    <h3>Documentation site</h3>
+    <h3 id="documentation-site">Documentation site</h3>
         <p>This very site is built with Kiss (dogfooding). Source is in <code>doc-site/</code>.</p>
 <pre><code class="language-sh">make docs           # Build once
 make docs-watch     # Build + watch for changes
@@ -118,7 +124,7 @@ to GitHub Pages via the <code>gh-pages</code> branch.</p>
 </main>
 
     <footer>
-        <p><a href="https://github.com/amund/kiss-php">💋Kiss v0.2.3</a> - Kiss (Keep It Simply Static) is a php static site generator.</p>
+        <p><a href="https://github.com/amund/kiss-php">💋Kiss v0.2.4</a> - Kiss (Keep It Simply Static) is a php static site generator.</p>
     </footer>
 </body>
 </html>

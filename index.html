@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Home - 💋Kiss</title>
-    <link rel="stylesheet" href="/kiss-php/css/style.css?v=35681514">
+    <link rel="stylesheet" href="/kiss-php/css/style.css?v=a7b9048b">
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -44,8 +44,16 @@
 
     <main><h2>Home</h2>
 
+<ul class="toc">
+  <li><a href="#what-is-kiss">What is Kiss?</a></li>
+  <li><a href="#quick-start">Quick start</a></li>
+  <li><a href="#features">Features</a></li>
+  <li><a href="#workflow">Workflow</a></li>
+  <li><a href="#license">License</a></li>
+</ul>
+
 <section>
-    <h3>What is Kiss?</h3>
+    <h3 id="what-is-kiss">What is Kiss?</h3>
         <p>Kiss is a PHP static site generator. It uses <strong>Twig</strong> for templating,
 supports YAML/JSON/PHP/XML/INI data sources, dynamic page parameters,
 static file sync, and a <em>watch</em> mode with partial rebuilds.</p>
@@ -53,7 +61,7 @@ static file sync, and a <em>watch</em> mode with partial rebuilds.</p>
             <img src="/kiss-php/img/image.png?v=67a45086" alt="" style="max-width:100%;border-radius:8px;margin-top:1.5rem;margin-inline:auto;display:block;">
         </section>
 <section>
-    <h3>Quick start</h3>
+    <h3 id="quick-start">Quick start</h3>
         <pre><code class="language-sh">composer global require amund/kiss-php
 kiss init my-site
 cd my-site
@@ -62,7 +70,7 @@ kiss build
 
             </section>
 <section>
-    <h3>Features</h3>
+    <h3 id="features">Features</h3>
         <ul>
 <li><strong><code>items</code></strong> - dedicated property for child pages</li>
 <li><strong><code>path()</code></strong> - URL generation between routes</li>
@@ -74,7 +82,7 @@ kiss build
 
             </section>
 <section>
-    <h3>Workflow</h3>
+    <h3 id="workflow">Workflow</h3>
         <pre><code class="language-mermaid">graph TD
     A[kiss.yml] --&gt; B[Config]
     B --&gt; C[Build]
@@ -90,14 +98,14 @@ kiss build
 
             </section>
 <section>
-    <h3>License</h3>
+    <h3 id="license">License</h3>
         <p>MIT</p>
 
             </section>
 </main>
 
     <footer>
-        <p><a href="https://github.com/amund/kiss-php">💋Kiss v0.2.3</a> - Kiss (Keep It Simply Static) is a php static site generator.</p>
+        <p><a href="https://github.com/amund/kiss-php">💋Kiss v0.2.4</a> - Kiss (Keep It Simply Static) is a php static site generator.</p>
     </footer>
 </body>
 </html>

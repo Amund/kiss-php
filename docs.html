@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Documentation - 💋Kiss</title>
-    <link rel="stylesheet" href="/kiss-php/css/style.css?v=35681514">
+    <link rel="stylesheet" href="/kiss-php/css/style.css?v=a7b9048b">
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -44,8 +44,15 @@
 
     <main><h2>Documentation</h2>
 
+<ul class="toc">
+  <li><a href="#installation">Installation</a></li>
+  <li><a href="#project-structure">Project structure</a></li>
+  <li><a href="#configuration-file">Configuration file</a></li>
+  <li><a href="#environment">Environment</a></li>
+</ul>
+
 <section>
-    <h3>Installation</h3>
+    <h3 id="installation">Installation</h3>
         <p>Via Composer (global) :</p>
 <pre><code class="language-sh">composer global require amund/kiss-php
 kiss init my-site
@@ -62,7 +69,7 @@ cd my-site
 
             </section>
 <section>
-    <h3>Project structure</h3>
+    <h3 id="project-structure">Project structure</h3>
         <pre><code class="language-mermaid">graph LR
     site[/project/]
     site --&gt; config(kiss.yml)
@@ -74,20 +81,20 @@ cd my-site
     site --&gt; output[Output]
     output --&gt; web[web/]
 
-    style site fill:#1e293b,stroke:#475569,color:#e2e8f0
+    style site fill:#27272a,stroke:#52525b,color:#e4e4e7
     style config fill:#16a34a,stroke:#15803d,color:#fff
-    style sources fill:transparent,stroke-dasharray:4 2,stroke:#475569,color:#94a3b8
-    style output fill:transparent,stroke-dasharray:4 2,stroke:#475569,color:#94a3b8
-    style copy fill:#334155,stroke:#475569,color:#e2e8f0
-    style data fill:#334155,stroke:#475569,color:#e2e8f0
-    style route fill:#334155,stroke:#475569,color:#e2e8f0
-    style template fill:#334155,stroke:#475569,color:#e2e8f0
-    style web fill:#334155,stroke:#475569,color:#e2e8f0
+    style sources fill:transparent,stroke-dasharray:4 2,stroke:#52525b,color:#a1a1aa
+    style output fill:transparent,stroke-dasharray:4 2,stroke:#52525b,color:#a1a1aa
+    style copy fill:#3f3f46,stroke:#52525b,color:#e4e4e7
+    style data fill:#3f3f46,stroke:#52525b,color:#e4e4e7
+    style route fill:#3f3f46,stroke:#52525b,color:#e4e4e7
+    style template fill:#3f3f46,stroke:#52525b,color:#e4e4e7
+    style web fill:#3f3f46,stroke:#52525b,color:#e4e4e7
 </code></pre>
 
             </section>
 <section>
-    <h3>Configuration file</h3>
+    <h3 id="configuration-file">Configuration file</h3>
         <p>Supported formats : YAML, JSON, PHP, XML, INI.</p>
 
                 <div class="tabs">
@@ -175,7 +182,7 @@ cache = tmp</code></pre>
         </div>
     </section>
 <section>
-    <h3>Environment</h3>
+    <h3 id="environment">Environment</h3>
         <p>Environment overrides :</p>
 <ul>
 <li><code>KISS_DEBUG=true</code></li>
@@ -187,7 +194,7 @@ cache = tmp</code></pre>
 </main>
 
     <footer>
-        <p><a href="https://github.com/amund/kiss-php">💋Kiss v0.2.3</a> - Kiss (Keep It Simply Static) is a php static site generator.</p>
+        <p><a href="https://github.com/amund/kiss-php">💋Kiss v0.2.4</a> - Kiss (Keep It Simply Static) is a php static site generator.</p>
     </footer>
 </body>
 </html>

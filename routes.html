@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Routes - 💋Kiss</title>
-    <link rel="stylesheet" href="/kiss-php/css/style.css?v=35681514">
+    <link rel="stylesheet" href="/kiss-php/css/style.css?v=a7b9048b">
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -44,8 +44,17 @@
 
     <main><h2>Routes</h2>
 
+<ul class="toc">
+  <li><a href="#single-page">Single page</a></li>
+  <li><a href="#pages-with-parameters">Pages with parameters</a></li>
+  <li><a href="#notes">Notes</a></li>
+  <li><a href="#external-reference-ref">External reference ($ref)</a></li>
+  <li><a href="#archive-page-with-list">Archive page with list</a></li>
+  <li><a href="#pagination">Pagination</a></li>
+</ul>
+
 <section>
-    <h3>Single page</h3>
+    <h3 id="single-page">Single page</h3>
                 <div class="tabs">
             <input type="radio" name="tab-1"
                id="tab-1-1"
@@ -88,7 +97,7 @@ return [
         </div>
     </section>
 <section>
-    <h3>Pages with parameters</h3>
+    <h3 id="pages-with-parameters">Pages with parameters</h3>
         <p><code>route/blog.yml</code> :</p>
 
                 <div class="tabs">
@@ -152,13 +161,13 @@ return [
         </div>
     </section>
 <section>
-    <h3>Notes</h3>
+    <h3 id="notes">Notes</h3>
         <p>Each item generates a separate page. <code>data</code> contains metadata,
 merged into every child page.</p>
 
             </section>
 <section>
-    <h3>External reference ($ref)</h3>
+    <h3 id="external-reference-ref">External reference ($ref)</h3>
                 <div class="tabs">
             <input type="radio" name="tab-4"
                id="tab-4-1"
@@ -201,7 +210,7 @@ return [
         </div>
     </section>
 <section>
-    <h3>Archive page with list</h3>
+    <h3 id="archive-page-with-list">Archive page with list</h3>
         <pre><code class="language-yaml">path: /blog
 template: blog_list.twig
 data:
@@ -218,7 +227,7 @@ items:
 
             </section>
 <section>
-    <h3>Pagination</h3>
+    <h3 id="pagination">Pagination</h3>
         <pre><code class="language-yaml">path: /blog
 template: blog_list.twig
 paginate: 10
@@ -243,7 +252,7 @@ items:
 </main>
 
     <footer>
-        <p><a href="https://github.com/amund/kiss-php">💋Kiss v0.2.3</a> - Kiss (Keep It Simply Static) is a php static site generator.</p>
+        <p><a href="https://github.com/amund/kiss-php">💋Kiss v0.2.4</a> - Kiss (Keep It Simply Static) is a php static site generator.</p>
     </footer>
 </body>
 </html>
