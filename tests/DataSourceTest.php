@@ -312,6 +312,61 @@ INI
         unlink($path);
     }
 
+    public function testSaveWithMdFormatThrows(): void
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Markdown');
+
+        $path = sys_get_temp_dir() . '/kiss-test-save-md-' . uniqid() . '.md';
+        file_put_contents($path, 'content');
+
+        $ds = new DataSource($path);
+        $ds->save('modified');
+    }
+
+    public function testSaveWithScalarContentToXml(): void
+    {
+        $path = sys_get_temp_dir() . '/kiss-test-save-xml-scalar-' . uniqid() . '.xml';
+
+        DataSource::saveXml($path, 'just text');
+        $loaded = simplexml_load_file($path);
+        $this->assertStringContainsString('just text', (string) $loaded);
+
+        unlink($path);
+    }
+
+    public function testSaveJsonWithNestedContent(): void
+    {
+        $path = sys_get_temp_dir() . '/kiss-test-save-json2-' . uniqid() . '.json';
+
+        DataSource::saveJson($path, ['nested' => ['a' => 1, 'b' => 2]]);
+        $loaded = json_decode(file_get_contents($path), true);
+        $this->assertEquals(['nested' => ['a' => 1, 'b' => 2]], $loaded);
+
+        unlink($path);
+    }
+
+    public function testSaveIniWithNumericKeys(): void
+    {
+        $path = sys_get_temp_dir() . '/kiss-test-save-ini-num-' . uniqid() . '.ini';
+
+        DataSource::saveIni($path, ['value1', 'value2']);
+        $loaded = file_get_contents($path);
+        $this->assertStringContainsString('value1', $loaded);
+        $this->assertStringContainsString('value2', $loaded);
+
+        unlink($path);
+    }
+
+    public function testLoadFromYmlExtension(): void
+    {
+        vfsStream::create(['test.yml' => 'key: value']);
+        $path = $this->root->url() . '/test.yml';
+
+        $ds = new DataSource($path);
+        $this->assertEquals(['key' => 'value'], $ds->content);
+    }
+
     public function testXmlLoaderPublicMethods()
     {
         $path = sys_get_temp_dir() . '/kiss-test-loader-xml-' . uniqid() . '.xml';

@@ -112,6 +112,45 @@ final class TwigExtensionTest extends TestCase
         rmdir($dir);
     }
 
+    public function testGetPathWithoutUrlGeneratorThrows(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('UrlGenerator not set');
+
+        $extension = new TwigExtension();
+        $extension->getPath('test');
+    }
+
+    public function testGetRouteWithoutCollectionThrows(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('RouteCollection and DataTree must be set');
+
+        $extension = new TwigExtension();
+        $extension->getRoute('test');
+    }
+
+    public function testMarkdownFilterViaTwig(): void
+    {
+        $loader = new ArrayLoader([
+            'test' => '{{ content|markdown }}',
+        ]);
+        $twig = new Environment($loader, ['debug' => false]);
+        $twig->addExtension(new TwigExtension());
+
+        $result = $twig->render('test', ['content' => '**bold**']);
+        $this->assertStringContainsString('<strong>bold</strong>', $result);
+    }
+
+    public function testGetFiltersReturnsMarkdown(): void
+    {
+        $extension = new TwigExtension();
+        $filters = $extension->getFilters();
+
+        $names = array_map(fn($f) => $f->getName(), $filters);
+        $this->assertContains('markdown', $names);
+    }
+
     public function testRouteReturnsResolvedData()
     {
         $dir = sys_get_temp_dir() . '/kiss-test-twig-ext-' . uniqid();

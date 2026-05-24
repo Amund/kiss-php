@@ -783,6 +783,128 @@ final class KissTest extends TestCase
         $this->assertStringNotContainsString('Next', $html2);
     }
 
+    public function testInitCreatesSiteInNewDirectory(): void
+    {
+        $dir = $this->makeTempDir();
+        rmdir($dir);
+        $this->assertDirectoryDoesNotExist($dir);
+
+        $kiss = new Kiss();
+        $kiss->log = new Log([]);
+        $kiss->log->silent = true;
+        $kiss->init($dir);
+
+        $this->assertDirectoryExists($dir . '/copy');
+        $this->assertDirectoryExists($dir . '/data');
+        $this->assertDirectoryExists($dir . '/route');
+        $this->assertDirectoryExists($dir . '/template');
+        $this->assertFileExists($dir . '/data/site.yml');
+        $this->assertFileExists($dir . '/route/index.yml');
+        $this->assertFileExists($dir . '/template/page.twig');
+    }
+
+    public function testInitInCurrentDirectory(): void
+    {
+        $dir = $this->makeTempDir();
+        rmdir($dir);
+        mkdir($dir, 0777, true);
+        $cwd = getcwd();
+        chdir($dir);
+
+        $kiss = new Kiss();
+        $kiss->log = new Log([]);
+        $kiss->log->silent = true;
+        $kiss->init();
+
+        $this->assertDirectoryExists($dir . '/copy');
+        chdir($cwd);
+    }
+
+    public function testInitInNonEmptyDirectoryThrows(): void
+    {
+        $this->expectException(KissException::class);
+        $this->expectExceptionMessage('not empty');
+
+        $dir = $this->makeTempDir();
+        file_put_contents($dir . '/somefile.txt', '');
+
+        $kiss = new Kiss();
+        $kiss->log = new Log([]);
+        $kiss->log->silent = true;
+        $kiss->init($dir);
+    }
+
+    public function testCopyNonExistentFileLogsFail(): void
+    {
+        $dir = $this->makeTempDir();
+        mkdir($dir . '/template', 0777, true);
+        $kiss = new Kiss($dir);
+        $kiss->config();
+        $kiss->warmup();
+        $kiss->log->silent = true;
+
+        $kiss->copy('nonexistent.txt');
+        $this->assertDirectoryDoesNotExist($kiss->config['path']['dist'] . '/nonexistent.txt');
+    }
+
+    public function testGetVersionWithoutComposerJson(): void
+    {
+        $dir = $this->makeTempDir();
+        $kiss = new Kiss($dir);
+
+        $version = $kiss->getVersion();
+        $this->assertSame('0.0', $version);
+    }
+
+    public function testRouteWithNoRouteDirLogsFail(): void
+    {
+        $dir = $this->makeTempDir();
+        mkdir($dir . '/template', 0777, true);
+        $kiss = new Kiss($dir);
+        $kiss->config();
+        $kiss->warmup();
+        $kiss->log->silent = true;
+
+        rmdir($kiss->config['path']['route']);
+
+        $kiss->route('all');
+        $this->assertTrue(true);
+    }
+
+    public function testCopyWithNoCopyDirLogsFail(): void
+    {
+        $dir = $this->makeTempDir();
+        mkdir($dir . '/template', 0777, true);
+        $kiss = new Kiss($dir);
+        $kiss->config();
+        $kiss->warmup();
+        $kiss->log->silent = true;
+
+        rmdir($kiss->config['path']['copy']);
+
+        $kiss->copy();
+        $this->assertTrue(true);
+    }
+
+    public function testRouteListOutput(): void
+    {
+        $this->expectOutputRegex('/route/');
+
+        $dir = $this->makeTempDir();
+        mkdir($dir . '/template', 0777, true);
+        $kiss = new Kiss($dir);
+        $kiss->config();
+        $kiss->warmup();
+        $kiss->log->silent = false;
+
+        file_put_contents(
+            $kiss->config['path']['route'] . '/page.yml',
+            "path: /test.html\ntemplate: page.twig"
+        );
+
+        $kiss->route('list');
+    }
+
     private function makeTempDir(): string
     {
         $dir = sys_get_temp_dir() . '/kiss-test-' . uniqid();

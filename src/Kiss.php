@@ -156,7 +156,7 @@ class Kiss
     public function init(?string $dir = null): self
     {
         $target = $dir !== null
-            ? Path::canonicalize(getcwd() . '/' . $dir)
+            ? Path::makeAbsolute($dir, getcwd())
             : getcwd();
 
         if (!is_dir($target)) {

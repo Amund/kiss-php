@@ -50,6 +50,55 @@ final class RouteBuilderTest extends TestCase
         $this->rmDir($dir);
     }
 
+    public function testBuildReturnsEmptyOnRouteError(): void
+    {
+        $dir = sys_get_temp_dir() . '/kiss-test-routebuilder-' . uniqid();
+        mkdir($dir . '/template', 0777, true);
+        file_put_contents($dir . '/template/page.twig', 'Hello');
+
+        $log = new Log(['log' => ['verbose' => false]]);
+        $log->silent = true;
+
+        $twigLoader = new \Twig\Loader\FilesystemLoader($dir . '/template');
+        $twig = new \Twig\Environment($twigLoader, ['debug' => false]);
+
+        $tree = new DataTree(['cache' => $dir . '/cache']);
+
+        $builder = new RouteBuilder($tree, $twig, $log, $dir . '/dist', $dir . '/data');
+
+        $ds = $this->createStub(DataSource::class);
+        $ds->content = (object) [
+            'path' => '/{slug}.html',
+            'template' => 'page.twig',
+        ];
+        $route = new Route('failing', $ds);
+
+        $result = $builder->build($route);
+        $this->assertSame([], $result);
+
+        $this->rmDir($dir);
+    }
+
+    public function testRemoveStaleFilesCleansEmptyParentDirs(): void
+    {
+        $dir = sys_get_temp_dir() . '/kiss-test-routebuilder-' . uniqid();
+        mkdir($dir . '/dist', 0777, true);
+        mkdir($dir . '/dist/blog', 0777, true);
+        touch($dir . '/dist/blog/post.html');
+
+        $log = $this->createStub(Log::class);
+        $tree = $this->createStub(DataTree::class);
+        $twig = $this->createStub(\Twig\Environment::class);
+
+        $builder = new RouteBuilder($tree, $twig, $log, $dir . '/dist', $dir . '/data');
+        $builder->removeStaleFiles($dir . '/dist', ['blog/post.html'], $dir . '/dist');
+
+        $this->assertFileDoesNotExist($dir . '/dist/blog/post.html');
+        $this->assertDirectoryDoesNotExist($dir . '/dist/blog');
+
+        $this->rmDir($dir);
+    }
+
     public function testBuildAndLogReturnsGeneratedPaths()
     {
         $dir = sys_get_temp_dir() . '/kiss-test-routebuilder-' . uniqid();
