@@ -159,9 +159,16 @@ class Kiss
             ? Path::canonicalize(getcwd() . '/' . $dir)
             : getcwd();
 
-        if (is_dir($target)) {
+        if (!is_dir($target)) {
+            $fs = new Filesystem();
+            $fs->mkdir($target);
+        } else {
             $files = array_diff(scandir($target), ['.', '..']);
             if (!empty($files)) {
+                if ($this->log === null) {
+                    $this->log = new Log([]);
+                    $this->log->silent = true;
+                }
                 $this->error(
                     $dir
                         ? "Directory '$dir' is not empty"
@@ -175,6 +182,9 @@ class Kiss
         $fs->mirror($skel, $target);
 
         $label = $dir ?? getcwd();
+        if ($this->log === null) {
+            $this->log = new Log([]);
+        }
         $this->log->ok('init', 'Site created');
         $this->log->info('       ' . $label);
         $this->log->info('       Run: kiss build');

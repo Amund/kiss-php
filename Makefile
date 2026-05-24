@@ -1,51 +1,40 @@
-# NOTE: les arguments précédés par des moins (-y, --version) seront capturés par make et ne seront pas disponibles pour les commandes
-#
-# On peut les forcer en ajoutant un argument "--" :
-# Tout ce qui suit cet argument spécial n'est pas capturé par make, et sera donc correctement envoyé vers les commandes
-#
-# La notation générique permet de complètement contourner ce problème : make [action] -- [arguments]
-# exemples :
-#   make drush -- cim -y
-#   make npm -- install malib --save-dev
+PHP_VERSION ?= 8.2
+PHP = docker run --rm -t -v $(PWD):/app -w /app php:$(PHP_VERSION)-cli
+COMPOSER = docker run --rm -t -e COMPOSER_COLOR=1 -v $(PWD):/app -w /app composer:2
 
+.PHONY: tests test phpcs phpstan coverage phar tag shell
 
-## GESTION DES CONTAINERS
-.PHONY: up down build config prune shell shell-root logs
+install:
+	@$(COMPOSER) install
 
-up: # Start up containers
-	@docker compose up -d --remove-orphans
-down: # Stop containers
-	@docker compose down
-config: # Print config
-	@docker compose config
-shell:
-	@docker compose exec app /bin/bash
-shell-root:
-	@docker compose exec -u 0:0 app /bin/bash
-logs:
-	@docker compose logs -f || true
-
-
-## OUTILS COURANTS
-.PHONY: composer kiss tests test phpcs phpstan coverage tag
-
-composer:
-	@docker compose exec app composer $(filter-out $@,$(MAKECMDGOALS)) || true
-kiss:
-	@docker compose exec app src/bin/kiss $(filter-out $@,$(MAKECMDGOALS)) || true
 tests:
-	@docker compose exec app vendor/bin/phpunit || true
+	@$(PHP) vendor/bin/phpunit 2>&1 | grep -v 'coverage driver\|OK, but there' || true
+
 test:
-	@docker compose exec app vendor/bin/phpunit $(filter-out $@,$(MAKECMDGOALS)) || true
+	@$(PHP) vendor/bin/phpunit $(filter-out $@,$(MAKECMDGOALS))
+
 phpcs:
-	@docker compose exec app vendor/bin/phpcs src tests $(filter-out $@,$(MAKECMDGOALS)) || true
+	@$(PHP) vendor/bin/phpcs src tests
+
 phpstan:
-	@docker compose exec app php -d memory_limit=512M vendor/bin/phpstan analyse --configuration=phpstan.neon $(filter-out $@,$(MAKECMDGOALS)) || true
+	@$(PHP) php -d memory_limit=512M vendor/bin/phpstan analyse
 
 coverage:
-	@rm -rf coverage
-	@docker compose exec app vendor/bin/phpunit 2>&1 | tail -5
+	@$(PHP) \
+	  sh -c 'rm -rf coverage && \
+	         pecl install pcov 2>/dev/null && \
+	         docker-php-ext-enable pcov 2>/dev/null && \
+	         vendor/bin/phpunit' 2>&1 | grep -v 'generated' || true
 	@echo "Report: coverage/index.html"
+
+phar:
+	@$(COMPOSER) install --no-dev --no-interaction --quiet && \
+	 $(PHP) php -d phar.readonly=0 build-phar.php && \
+	 $(COMPOSER) install --no-interaction --quiet
+	@mkdir -p $(HOME)/.local/bin && \
+	 mv -f kiss.phar $(HOME)/.local/bin/kiss && \
+	 chmod +x $(HOME)/.local/bin/kiss && \
+	 echo "Installed: $(HOME)/.local/bin/kiss"
 
 tag:
 	@VERSION=$$(jq -r '.version' composer.json); \
@@ -53,6 +42,9 @@ tag:
 	git tag "$$VERSION"; \
 	git push origin "$$VERSION"; \
 	echo "Tagged."
+
+shell:
+	@docker run --rm -it -v $(PWD):/app -w /app php:$(PHP_VERSION)-cli /bin/bash
 
 %:
 	@:

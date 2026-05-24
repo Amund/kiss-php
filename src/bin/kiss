@@ -3,21 +3,29 @@
 
 namespace Kiss;
 
-if (!is_file('vendor/autoload.php')) {
-    fwrite(STDERR, "\nNo autoload.php found, you must run 'make composer i' first.\n\n");
-    exit(1);
-}
+$pharRunning = class_exists(\Phar::class) && \Phar::running();
 
-require_once 'vendor/autoload.php';
+if ($pharRunning) {
+    require_once \Phar::running() . '/vendor/autoload.php';
+} else {
+    if (!is_file('vendor/autoload.php')) {
+        fwrite(STDERR, "\nNo autoload.php found, you must run 'composer install' first.\n\n");
+        exit(1);
+    }
+    require_once 'vendor/autoload.php';
+}
 
 $kiss = new Kiss();
 $totalTask = $kiss->newTask();
-$kiss->config();
 
 try {
+    if ((@$argv[1] !== 'init')) {
+        $kiss->config();
+    }
+
     switch (@$argv[1]) {
         case 'init':
-            $kiss->config()->init($argv[2] ?? null);
+            $kiss->init($argv[2] ?? null);
             break;
 
         case 'test':
@@ -41,13 +49,13 @@ try {
             $watches = $kiss->getWatches();
             $self = $_SERVER['PHP_SELF'] ?? $argv[0];
 
-            if (`which inotifywait 2>/dev/null`) {
+            if (shell_exec('which inotifywait 2>/dev/null')) {
                 passthru(sprintf(
                     "inotifywait -mrq -e close_write -e moved_to -e moved_from -e delete --format '%%w%%f' %s | while read LINE; do %s watched \$LINE; done",
                     $watches,
                     $self
                 ));
-            } elseif (`which fswatch 2>/dev/null`) {
+            } elseif (shell_exec('which fswatch 2>/dev/null')) {
                 passthru(sprintf(
                     "fswatch -r -0 %s | xargs -0 -n1 -I {} %s watched {}",
                     $watches,

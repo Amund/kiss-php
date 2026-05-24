@@ -1,26 +1,35 @@
-# kiss-php — Agent Guide
+# kiss-php - Agent Guide
 
 A PHP static site generator ("Keep It Simply Static"). Namespace `Kiss\`, entry config `kiss.yml`.
 
 ## Dev environment
 
-Requires PHP 8.2+ and `inotifywait` (Linux/WSL) or `fswatch` (macOS).
+Each `make` command runs in a disposable Docker container (`php:8.2-cli` or `composer:2`). No persistent containers, no compose.
 
 ```sh
-php src/bin/kiss build    # build
-php src/bin/kiss watch    # watch for changes
+make install
+make tests
+make phar
+```
+
+You can also run directly if you have PHP 8.2+ locally:
+```sh
+php src/bin/kiss build
+php src/bin/kiss watch
 ```
 
 ## Commands
 
 | `make <target>` | What it does |
 |---|---|
+| `install` | `composer install` via `composer:2` image |
 | `tests` | Run all PHPUnit tests |
-| `test -- <phpunit-args>` | Run single test file: `make test -- tests/KissTest.php` or `make test -- --filter=testBuild` |
-| `phpcs` | Lint (PSR-12) via `vendor/bin/phpcs src tests` |
-| `phpstan` | Static analysis at level 5 (`php -d memory_limit=512M vendor/bin/phpstan analyse`) |
-| `coverage` | Generate HTML coverage report in `coverage/` (requires `XDEBUG_MODE=coverage` in `.env`) |
-| `kiss -- <cmd>` | Run the CLI (`src/bin/kiss`) inside the container |
+| `test -- <phpunit-args>` | Run single test file: `make test -- tests/KissTest.php` |
+| `phpcs` | Lint (PSR-12) |
+| `phpstan` | Static analysis at level 5 |
+| `coverage` | HTML coverage report (`coverage/index.html`) |
+| `phar` | Build `kiss.phar` (installs --no-dev, builds, restores dev) |
+| `shell` | Bash inside `php:8.2-cli` container |
 
 **CI order**: lint → typecheck → test (each is independent).
 
