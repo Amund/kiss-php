@@ -1,4 +1,4 @@
-# 💋 Kiss — Keep It Simply Static
+# 💋 Kiss - Keep It Simply Static
 
 A PHP static site generator. Uses **Twig** for templating, supports YAML/JSON/PHP/XML/INI data sources, dynamic page parameters, static file sync, and a *watch* mode with partial rebuilds.
 

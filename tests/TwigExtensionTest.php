@@ -65,6 +65,34 @@ final class TwigExtensionTest extends TestCase
         $this->assertContains('dump', $names);
         $this->assertContains('path', $names);
         $this->assertContains('route', $names);
+        $this->assertContains('asset', $names);
+    }
+
+    public function testAssetReturnsPathWithHashForExistingFile(): void
+    {
+        $dir = sys_get_temp_dir() . '/kiss-test-twig-ext-' . uniqid();
+        mkdir($dir, 0777, true);
+        file_put_contents($dir . '/style.css', 'body { color: red; }');
+
+        $extension = new TwigExtension();
+        $extension->setCopyPath($dir);
+
+        $result = $extension->getAsset('style.css');
+        $this->assertMatchesRegularExpression(
+            '#^/style\.css\?v=[a-f0-9]{8}$#',
+            $result
+        );
+
+        unlink($dir . '/style.css');
+        rmdir($dir);
+    }
+
+    public function testAssetReturnsPlainPathForMissingFile(): void
+    {
+        $extension = new TwigExtension();
+        $extension->setCopyPath('/tmp/nonexistent');
+
+        $this->assertSame('/style.css', $extension->getAsset('style.css'));
     }
 
     public function testRouteReturnsEmptyForUnknownRoute()

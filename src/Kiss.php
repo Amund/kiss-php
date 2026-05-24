@@ -135,6 +135,7 @@ class Kiss
         ]);
         $this->twigExtension = new TwigExtension();
         $this->twig->addExtension($this->twigExtension);
+        $this->twigExtension->setCopyPath($this->config['path']['copy']);
 
         return $this;
     }
