@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Routes - 💋Kiss</title>
+    <link rel="stylesheet" href="/css/style.css?v=35681514">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('pre code.language-mermaid').forEach(function(el) {
+            var pre = el.parentElement;
+            pre.textContent = el.textContent;
+            pre.classList.add('mermaid');
+        });
+        var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: dark ? '#22c55e' : '#16a34a',
+                primaryBorderColor: dark ? '#166534' : '#15803d',
+                lineColor: dark ? '#475569' : '#94a3b8',
+                tertiaryColor: dark ? '#1e293b' : '#f8fafc',
+                background: dark ? '#09090b' : '#ffffff',
+            }
+        });
+    });
+    </script>
+</head>
+<body>
+    <header>
+        <h1>💋Kiss</h1>
+        <p class="tagline">Keep It Simply Static</p>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/docs.html">Docs</a>
+            <a href="/routes.html">Routes</a>
+            <a href="/reference.html">Reference</a>
+            <a href="/development.html">Dev</a>
+            <a href="https://github.com/amund/kiss-php">GitHub</a>
+        </nav>
+    </header>
+
+    <main><h2>Routes</h2>
+
+<section>
+    <h3>Single page</h3>
+                <div class="tabs">
+            <input type="radio" name="tab-1"
+               id="tab-1-1"
+               checked>
+        <label for="tab-1-1">YAML</label>
+        <div class="tab-content">
+<pre><code class="language-yaml">path: /index.html
+template: page.twig
+data:
+  title: Home
+</code></pre>
+        </div>
+            <input type="radio" name="tab-1"
+               id="tab-1-2"
+               >
+        <label for="tab-1-2">JSON</label>
+        <div class="tab-content">
+<pre><code class="language-json">{
+  &quot;path&quot;: &quot;/index.html&quot;,
+  &quot;template&quot;: &quot;page.twig&quot;,
+  &quot;data&quot;: {
+    &quot;title&quot;: &quot;Home&quot;
+  }
+}
+</code></pre>
+        </div>
+            <input type="radio" name="tab-1"
+               id="tab-1-3"
+               >
+        <label for="tab-1-3">PHP</label>
+        <div class="tab-content">
+<pre><code class="language-php">&lt;?php
+return [
+  &#039;path&#039; =&gt; &#039;/index.html&#039;,
+  &#039;template&#039; =&gt; &#039;page.twig&#039;,
+  &#039;data&#039; =&gt; [&#039;title&#039; =&gt; &#039;Home&#039;],
+];
+</code></pre>
+        </div>
+        </div>
+    </section>
+<section>
+    <h3>Pages with parameters</h3>
+        <p><code>route/blog.yml</code> :</p>
+
+                <div class="tabs">
+            <input type="radio" name="tab-2"
+               id="tab-2-1"
+               checked>
+        <label for="tab-2-1">YAML</label>
+        <div class="tab-content">
+<pre><code class="language-yaml">path: /{slug}.html
+template: post.twig
+data:
+  blog_title: &quot;My Blog&quot;
+items:
+  - slug: hello-world
+    title: Hello World
+  - slug: second-article
+    title: Second article
+</code></pre>
+        </div>
+            <input type="radio" name="tab-2"
+               id="tab-2-2"
+               >
+        <label for="tab-2-2">JSON</label>
+        <div class="tab-content">
+<pre><code class="language-json">{
+  &quot;path&quot;: &quot;/{slug}.html&quot;,
+  &quot;template&quot;: &quot;post.twig&quot;,
+  &quot;data&quot;: {
+    &quot;blog_title&quot;: &quot;My Blog&quot;
+  },
+  &quot;items&quot;: [
+    {
+      &quot;slug&quot;: &quot;hello-world&quot;,
+      &quot;title&quot;: &quot;Hello World&quot;
+    },
+    {
+      &quot;slug&quot;: &quot;second-article&quot;,
+      &quot;title&quot;: &quot;Second article&quot;
+    }
+  ]
+}
+</code></pre>
+        </div>
+            <input type="radio" name="tab-2"
+               id="tab-2-3"
+               >
+        <label for="tab-2-3">PHP</label>
+        <div class="tab-content">
+<pre><code class="language-php">&lt;?php
+return [
+  &#039;path&#039; =&gt; &#039;/{slug}.html&#039;,
+  &#039;template&#039; =&gt; &#039;post.twig&#039;,
+  &#039;data&#039; =&gt; [&#039;blog_title&#039; =&gt; &#039;My Blog&#039;],
+  &#039;items&#039; =&gt; [
+    [&#039;slug&#039; =&gt; &#039;hello-world&#039;, &#039;title&#039; =&gt; &#039;Hello World&#039;],
+    [&#039;slug&#039; =&gt; &#039;second-article&#039;, &#039;title&#039; =&gt; &#039;Second article&#039;],
+  ],
+];
+</code></pre>
+        </div>
+        </div>
+    </section>
+<section>
+    <h3>Notes</h3>
+        <p>Each item generates a separate page. <code>data</code> contains metadata,
+merged into every child page.</p>
+
+            </section>
+<section>
+    <h3>External reference ($ref)</h3>
+                <div class="tabs">
+            <input type="radio" name="tab-4"
+               id="tab-4-1"
+               checked>
+        <label for="tab-4-1">YAML</label>
+        <div class="tab-content">
+<pre><code class="language-yaml">path: /{slug}.html
+template: post.twig
+items:
+  $ref: data/articles.yml
+</code></pre>
+        </div>
+            <input type="radio" name="tab-4"
+               id="tab-4-2"
+               >
+        <label for="tab-4-2">JSON</label>
+        <div class="tab-content">
+<pre><code class="language-json">{
+  &quot;path&quot;: &quot;/{slug}.html&quot;,
+  &quot;template&quot;: &quot;post.twig&quot;,
+  &quot;items&quot;: {
+    &quot;$ref&quot;: &quot;data/articles.yml&quot;
+  }
+}
+</code></pre>
+        </div>
+            <input type="radio" name="tab-4"
+               id="tab-4-3"
+               >
+        <label for="tab-4-3">PHP</label>
+        <div class="tab-content">
+<pre><code class="language-php">&lt;?php
+return [
+  &#039;path&#039; =&gt; &#039;/{slug}.html&#039;,
+  &#039;template&#039; =&gt; &#039;post.twig&#039;,
+  &#039;items&#039; =&gt; [&#039;$ref&#039; =&gt; &#039;data/articles.yml&#039;],
+];
+</code></pre>
+        </div>
+        </div>
+    </section>
+<section>
+    <h3>Archive page with list</h3>
+        <pre><code class="language-yaml">path: /blog
+template: blog_list.twig
+data:
+  title: &quot;Blog&quot;
+items:
+  $ref: data/posts.yml
+</code></pre>
+<p>Template :</p>
+<pre><code class="language-twig">&lt;h1&gt;{{ title }}&lt;/h1&gt;
+{% for post in items %}
+  &lt;a href=&quot;{{ path('blog', {slug: post.slug}) }}&quot;&gt;{{ post.title }}&lt;/a&gt;
+{% endfor %}
+</code></pre>
+
+            </section>
+<section>
+    <h3>Pagination</h3>
+        <pre><code class="language-yaml">path: /blog
+template: blog_list.twig
+paginate: 10
+data:
+  title: Archives
+items:
+  $ref: data/posts.yml
+</code></pre>
+<p>Generates <code>blog/index.html</code> (page 1) and <code>blog/page/{n}/index.html</code>.</p>
+<pre><code class="language-twig">{% for post in items %}
+  ...
+{% endfor %}
+{% if prevPage %}
+  &lt;a href=&quot;{{ path('blog', {page: prevPage}) }}&quot;&gt;← Previous&lt;/a&gt;
+{% endif %}
+{% if nextPage %}
+  &lt;a href=&quot;{{ path('blog', {page: nextPage}) }}&quot;&gt;Next →&lt;/a&gt;
+{% endif %}
+</code></pre>
+
+            </section>
+</main>
+
+    <footer>
+        <p><a href="https://github.com/amund/kiss-php">💋Kiss v0.2.2</a> - Kiss (Keep It Simply Static) is a php static site generator.</p>
+    </footer>
+</body>
+</html>

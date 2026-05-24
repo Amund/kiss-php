@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Home - 💋Kiss</title>
+    <link rel="stylesheet" href="/css/style.css?v=35681514">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('pre code.language-mermaid').forEach(function(el) {
+            var pre = el.parentElement;
+            pre.textContent = el.textContent;
+            pre.classList.add('mermaid');
+        });
+        var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: dark ? '#22c55e' : '#16a34a',
+                primaryBorderColor: dark ? '#166534' : '#15803d',
+                lineColor: dark ? '#475569' : '#94a3b8',
+                tertiaryColor: dark ? '#1e293b' : '#f8fafc',
+                background: dark ? '#09090b' : '#ffffff',
+            }
+        });
+    });
+    </script>
+</head>
+<body>
+    <header>
+        <h1>💋Kiss</h1>
+        <p class="tagline">Keep It Simply Static</p>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/docs.html">Docs</a>
+            <a href="/routes.html">Routes</a>
+            <a href="/reference.html">Reference</a>
+            <a href="/development.html">Dev</a>
+            <a href="https://github.com/amund/kiss-php">GitHub</a>
+        </nav>
+    </header>
+
+    <main><h2>Home</h2>
+
+<section>
+    <h3>What is Kiss?</h3>
+        <p>Kiss is a PHP static site generator. It uses <strong>Twig</strong> for templating,
+supports YAML/JSON/PHP/XML/INI data sources, dynamic page parameters,
+static file sync, and a <em>watch</em> mode with partial rebuilds.</p>
+
+            <img src="/img/image.png?v=67a45086" alt="" style="max-width:100%;border-radius:8px;margin-top:1.5rem;margin-inline:auto;display:block;">
+        </section>
+<section>
+    <h3>Quick start</h3>
+        <pre><code class="language-sh">composer global require amund/kiss-php
+kiss init my-site
+cd my-site
+kiss build
+</code></pre>
+
+            </section>
+<section>
+    <h3>Features</h3>
+        <ul>
+<li><strong><code>items</code></strong> - dedicated property for child pages</li>
+<li><strong><code>path()</code></strong> - URL generation between routes</li>
+<li><strong><code>route()</code></strong> - cross-route data access</li>
+<li><strong><code>asset()</code></strong> - signed URLs (cache busting)</li>
+<li><strong><code>paginate</code></strong> - automatic pagination</li>
+<li><strong>Partial rebuilds</strong> - only impacted routes on file change</li>
+</ul>
+
+            </section>
+<section>
+    <h3>Workflow</h3>
+        <pre><code class="language-mermaid">graph TD
+    A[kiss.yml] --&gt; B[Config]
+    B --&gt; C[Build]
+    C --&gt; D[copy dir]
+    D --&gt; I[Static files]
+    C --&gt; E[route dir]
+    E --&gt; F[items + data]
+    F --&gt; G[Twig render]
+    G --&gt; H[HTML pages]
+    H --&gt; J[Route manifest]
+    J --&gt; K[Clean stale files]
+</code></pre>
+
+            </section>
+<section>
+    <h3>License</h3>
+        <p>MIT</p>
+
+            </section>
+</main>
+
+    <footer>
+        <p><a href="https://github.com/amund/kiss-php">💋Kiss v0.2.2</a> - Kiss (Keep It Simply Static) is a php static site generator.</p>
+    </footer>
+</body>
+</html>

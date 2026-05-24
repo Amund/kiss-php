@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Reference - 💋Kiss</title>
+    <link rel="stylesheet" href="/css/style.css?v=35681514">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('pre code.language-mermaid').forEach(function(el) {
+            var pre = el.parentElement;
+            pre.textContent = el.textContent;
+            pre.classList.add('mermaid');
+        });
+        var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: dark ? '#22c55e' : '#16a34a',
+                primaryBorderColor: dark ? '#166534' : '#15803d',
+                lineColor: dark ? '#475569' : '#94a3b8',
+                tertiaryColor: dark ? '#1e293b' : '#f8fafc',
+                background: dark ? '#09090b' : '#ffffff',
+            }
+        });
+    });
+    </script>
+</head>
+<body>
+    <header>
+        <h1>💋Kiss</h1>
+        <p class="tagline">Keep It Simply Static</p>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/docs.html">Docs</a>
+            <a href="/routes.html">Routes</a>
+            <a href="/reference.html">Reference</a>
+            <a href="/development.html">Dev</a>
+            <a href="https://github.com/amund/kiss-php">GitHub</a>
+        </nav>
+    </header>
+
+    <main><h2>Reference</h2>
+
+<section>
+    <h3>Twig functions</h3>
+        <h3><code>path(name, params)</code></h3>
+<p>Generates URLs between routes :</p>
+<pre><code class="language-twig">{{ path('about') }}                          → /about
+{{ path('blog', {slug: 'hello'}) }}          → /hello.html
+{{ path('blog') }}                            → /blog
+{{ path('blog', {page: 2}) }}                 → /blog/page/2
+</code></pre>
+<p>Trailing <code>/index.html</code> is automatically cleaned :</p>
+<pre><code class="language-twig">{{ path('index') }}                           → /
+{{ path('blog') }}                            → /blog
+</code></pre>
+<h3><code>route(name)</code></h3>
+<p>Access another route's resolved data :</p>
+<pre><code class="language-twig">{% set blog = route('blog') %}
+&lt;h1&gt;{{ blog.title }}&lt;/h1&gt;
+{% for post in blog.items %}
+  &lt;a href=&quot;{{ path('blog', {slug: post.slug}) }}&quot;&gt;{{ post.title }}&lt;/a&gt;
+{% endfor %}
+</code></pre>
+<h3><code>asset(path)</code></h3>
+<p>Signed URLs with CRC32C hash for cache busting :</p>
+<pre><code class="language-twig">&lt;link rel=&quot;stylesheet&quot; href=&quot;{{ asset('css/style.css') }}&quot;&gt;
+&lt;!-- → /css/style.css?v=70a5a1d3 --&gt;
+</code></pre>
+<h3><code>dump(...)</code></h3>
+<p>VarDump helper (only in debug mode) :</p>
+<pre><code class="language-twig">{{ dump() }}
+{{ dump(foo, bar) }}
+</code></pre>
+
+            </section>
+<section>
+    <h3>Twig filters</h3>
+        <h3><code>markdown</code></h3>
+<p>Converts Markdown to HTML via league/commonmark (GFM) :</p>
+<pre><code class="language-twig">{{ content|markdown|raw }}
+</code></pre>
+
+            </section>
+<section>
+    <h3>Data sources</h3>
+        <p>Files in <code>data/</code> are loaded automatically and accessible via <code>{{ global.* }}</code>.</p>
+<p>Supported formats : YAML, JSON, PHP, XML, INI, Markdown.</p>
+<p><code>data/site.yml</code> :</p>
+
+                <div class="tabs">
+            <input type="radio" name="tab-3"
+               id="tab-3-1"
+               checked>
+        <label for="tab-3-1">YAML</label>
+        <div class="tab-content">
+<pre><code class="language-yaml">name: My Site
+tagline: Great static site
+</code></pre>
+        </div>
+            <input type="radio" name="tab-3"
+               id="tab-3-2"
+               >
+        <label for="tab-3-2">JSON</label>
+        <div class="tab-content">
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;My Site&quot;,
+  &quot;tagline&quot;: &quot;Great static site&quot;
+}
+</code></pre>
+        </div>
+            <input type="radio" name="tab-3"
+               id="tab-3-3"
+               >
+        <label for="tab-3-3">PHP</label>
+        <div class="tab-content">
+<pre><code class="language-php">&lt;?php
+return [
+  &#039;name&#039; =&gt; &#039;My Site&#039;,
+  &#039;tagline&#039; =&gt; &#039;Great static site&#039;,
+];</code></pre>
+        </div>
+            <input type="radio" name="tab-3"
+               id="tab-3-4"
+               >
+        <label for="tab-3-4">XML</label>
+        <div class="tab-content">
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;root&gt;
+  &lt;name&gt;My Site&lt;/name&gt;
+  &lt;tagline&gt;Great static site&lt;/tagline&gt;
+&lt;/root&gt;</code></pre>
+        </div>
+            <input type="radio" name="tab-3"
+               id="tab-3-5"
+               >
+        <label for="tab-3-5">INI</label>
+        <div class="tab-content">
+<pre><code class="language-ini">name = My Site
+tagline = Great static site</code></pre>
+        </div>
+        </div>
+    </section>
+<section>
+    <h3>Markdown</h3>
+        <pre><code class="language-markdown">---
+title: My Article
+date: 2024-01-01
+---
+Content **markdown** here.
+</code></pre>
+<p>Frontmatter fields are available directly, body as <code>content</code> :</p>
+<pre><code class="language-twig">&lt;h1&gt;{{ title }}&lt;/h1&gt;
+&lt;div&gt;{{ content|markdown|raw }}&lt;/div&gt;
+</code></pre>
+
+            </section>
+<section>
+    <h3>CLI commands</h3>
+        <table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kiss init [dir]</code></td>
+<td>Create a new site</td>
+</tr>
+<tr>
+<td><code>kiss build</code></td>
+<td>Build the whole site</td>
+</tr>
+<tr>
+<td><code>kiss watch</code></td>
+<td>Build then watch for changes</td>
+</tr>
+<tr>
+<td><code>kiss route [list|name]</code></td>
+<td>List or rebuild routes</td>
+</tr>
+<tr>
+<td><code>kiss copy [path]</code></td>
+<td>Sync a file from <code>copy/</code> to <code>web/</code></td>
+</tr>
+<tr>
+<td><code>kiss reset [all|dist|cache]</code></td>
+<td>Remove <code>web/</code> and/or <code>tmp/</code></td>
+</tr>
+<tr>
+<td><code>kiss test</code></td>
+<td>Validate configuration</td>
+</tr>
+</tbody>
+</table>
+
+            </section>
+</main>
+
+    <footer>
+        <p><a href="https://github.com/amund/kiss-php">💋Kiss v0.2.2</a> - Kiss (Keep It Simply Static) is a php static site generator.</p>
+    </footer>
+</body>
+</html>

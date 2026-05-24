@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Documentation - 💋Kiss</title>
+    <link rel="stylesheet" href="/css/style.css?v=35681514">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('pre code.language-mermaid').forEach(function(el) {
+            var pre = el.parentElement;
+            pre.textContent = el.textContent;
+            pre.classList.add('mermaid');
+        });
+        var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: dark ? '#22c55e' : '#16a34a',
+                primaryBorderColor: dark ? '#166534' : '#15803d',
+                lineColor: dark ? '#475569' : '#94a3b8',
+                tertiaryColor: dark ? '#1e293b' : '#f8fafc',
+                background: dark ? '#09090b' : '#ffffff',
+            }
+        });
+    });
+    </script>
+</head>
+<body>
+    <header>
+        <h1>💋Kiss</h1>
+        <p class="tagline">Keep It Simply Static</p>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/docs.html">Docs</a>
+            <a href="/routes.html">Routes</a>
+            <a href="/reference.html">Reference</a>
+            <a href="/development.html">Dev</a>
+            <a href="https://github.com/amund/kiss-php">GitHub</a>
+        </nav>
+    </header>
+
+    <main><h2>Documentation</h2>
+
+<section>
+    <h3>Installation</h3>
+        <p>Via Composer (global) :</p>
+<pre><code class="language-sh">composer global require amund/kiss-php
+kiss init my-site
+cd my-site
+kiss build
+</code></pre>
+<p>Via PHAR (no Composer needed) :</p>
+<pre><code class="language-sh">curl -LO https://github.com/amund/kiss-php/releases/latest/download/kiss.phar
+chmod +x kiss.phar
+./kiss.phar init my-site
+cd my-site
+./kiss.phar build
+</code></pre>
+
+            </section>
+<section>
+    <h3>Project structure</h3>
+        <pre><code class="language-mermaid">graph LR
+    site[/project/]
+    site --&gt; config(kiss.yml)
+    site --&gt; sources[Sources]
+    sources --&gt; copy[copy/]
+    sources --&gt; data[data/]
+    sources --&gt; route[route/]
+    sources --&gt; template[template/]
+    site --&gt; output[Output]
+    output --&gt; web[web/]
+
+    style site fill:#1e293b,stroke:#475569,color:#e2e8f0
+    style config fill:#16a34a,stroke:#15803d,color:#fff
+    style sources fill:transparent,stroke-dasharray:4 2,stroke:#475569,color:#94a3b8
+    style output fill:transparent,stroke-dasharray:4 2,stroke:#475569,color:#94a3b8
+    style copy fill:#334155,stroke:#475569,color:#e2e8f0
+    style data fill:#334155,stroke:#475569,color:#e2e8f0
+    style route fill:#334155,stroke:#475569,color:#e2e8f0
+    style template fill:#334155,stroke:#475569,color:#e2e8f0
+    style web fill:#334155,stroke:#475569,color:#e2e8f0
+</code></pre>
+
+            </section>
+<section>
+    <h3>Configuration file</h3>
+        <p>Supported formats : YAML, JSON, PHP, XML, INI.</p>
+
+                <div class="tabs">
+            <input type="radio" name="tab-3"
+               id="tab-3-1"
+               checked>
+        <label for="tab-3-1">YAML</label>
+        <div class="tab-content">
+<pre><code class="language-yaml">debug: true
+path:
+  copy: copy
+  data: data
+  route: route
+  template: template
+  dist: web
+  cache: tmp</code></pre>
+        </div>
+            <input type="radio" name="tab-3"
+               id="tab-3-2"
+               >
+        <label for="tab-3-2">JSON</label>
+        <div class="tab-content">
+<pre><code class="language-json">{
+  &quot;debug&quot;: true,
+  &quot;path&quot;: {
+    &quot;copy&quot;: &quot;copy&quot;,
+    &quot;data&quot;: &quot;data&quot;,
+    &quot;route&quot;: &quot;route&quot;,
+    &quot;template&quot;: &quot;template&quot;,
+    &quot;dist&quot;: &quot;web&quot;,
+    &quot;cache&quot;: &quot;tmp&quot;
+  }
+}</code></pre>
+        </div>
+            <input type="radio" name="tab-3"
+               id="tab-3-3"
+               >
+        <label for="tab-3-3">PHP</label>
+        <div class="tab-content">
+<pre><code class="language-php">&lt;?php
+return [
+  &#039;debug&#039; =&gt; true,
+  &#039;path&#039; =&gt; [
+    &#039;copy&#039; =&gt; &#039;copy&#039;,
+    &#039;data&#039; =&gt; &#039;data&#039;,
+    &#039;route&#039; =&gt; &#039;route&#039;,
+    &#039;template&#039; =&gt; &#039;template&#039;,
+    &#039;dist&#039; =&gt; &#039;web&#039;,
+    &#039;cache&#039; =&gt; &#039;tmp&#039;,
+  ],
+];</code></pre>
+        </div>
+            <input type="radio" name="tab-3"
+               id="tab-3-4"
+               >
+        <label for="tab-3-4">XML</label>
+        <div class="tab-content">
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;root&gt;
+  &lt;debug&gt;true&lt;/debug&gt;
+  &lt;path&gt;
+    &lt;copy&gt;copy&lt;/copy&gt;
+    &lt;data&gt;data&lt;/data&gt;
+    &lt;route&gt;route&lt;/route&gt;
+    &lt;template&gt;template&lt;/template&gt;
+    &lt;dist&gt;web&lt;/dist&gt;
+    &lt;cache&gt;tmp&lt;/cache&gt;
+  &lt;/path&gt;
+&lt;/root&gt;</code></pre>
+        </div>
+            <input type="radio" name="tab-3"
+               id="tab-3-5"
+               >
+        <label for="tab-3-5">INI</label>
+        <div class="tab-content">
+<pre><code class="language-ini">debug = true
+[path]
+copy = copy
+data = data
+route = route
+template = template
+dist = web
+cache = tmp</code></pre>
+        </div>
+        </div>
+    </section>
+<section>
+    <h3>Environment</h3>
+        <p>Environment overrides :</p>
+<ul>
+<li><code>KISS_DEBUG=true</code></li>
+<li><code>KISS_VERBOSE=true</code></li>
+<li><code>KISS_ENTRY=path/to/config.yml</code></li>
+</ul>
+
+            </section>
+</main>
+
+    <footer>
+        <p><a href="https://github.com/amund/kiss-php">💋Kiss v0.2.2</a> - Kiss (Keep It Simply Static) is a php static site generator.</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Development - 💋Kiss</title>
+    <link rel="stylesheet" href="/css/style.css?v=35681514">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('pre code.language-mermaid').forEach(function(el) {
+            var pre = el.parentElement;
+            pre.textContent = el.textContent;
+            pre.classList.add('mermaid');
+        });
+        var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: dark ? '#22c55e' : '#16a34a',
+                primaryBorderColor: dark ? '#166534' : '#15803d',
+                lineColor: dark ? '#475569' : '#94a3b8',
+                tertiaryColor: dark ? '#1e293b' : '#f8fafc',
+                background: dark ? '#09090b' : '#ffffff',
+            }
+        });
+    });
+    </script>
+</head>
+<body>
+    <header>
+        <h1>💋Kiss</h1>
+        <p class="tagline">Keep It Simply Static</p>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/docs.html">Docs</a>
+            <a href="/routes.html">Routes</a>
+            <a href="/reference.html">Reference</a>
+            <a href="/development.html">Dev</a>
+            <a href="https://github.com/amund/kiss-php">GitHub</a>
+        </nav>
+    </header>
+
+    <main><h2>Development</h2>
+
+<section>
+    <h3>Setup</h3>
+        <p>Clone the repository and install dependencies :</p>
+<pre><code class="language-sh">git clone https://github.com/amund/kiss-php
+cd kiss-php
+composer install
+</code></pre>
+<p>You can also run each task via Docker (no local PHP needed) :</p>
+<pre><code class="language-sh">make install    # composer install
+make tests      # PHPUnit
+</code></pre>
+
+            </section>
+<section>
+    <h3>Commands</h3>
+        <table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>make install</code></td>
+<td><code>composer install</code></td>
+</tr>
+<tr>
+<td><code>make tests</code></td>
+<td>Run all PHPUnit tests</td>
+</tr>
+<tr>
+<td><code>make test -- &lt;args&gt;</code></td>
+<td>Run a specific test</td>
+</tr>
+<tr>
+<td><code>make phpcs</code></td>
+<td>PSR-12 lint</td>
+</tr>
+<tr>
+<td><code>make phpstan</code></td>
+<td>Static analysis</td>
+</tr>
+<tr>
+<td><code>make coverage</code></td>
+<td>HTML coverage report</td>
+</tr>
+<tr>
+<td><code>make phar</code></td>
+<td>Build <code>kiss.phar</code> (~2.6MB)</td>
+</tr>
+<tr>
+<td><code>make docs</code></td>
+<td>Build this documentation site</td>
+</tr>
+</tbody>
+</table>
+<p>Each command runs in a disposable Docker container - no persistent
+daemons, no docker-compose. Images used : <code>php:8.2-cli</code> and <code>composer:2</code>.</p>
+
+            </section>
+<section>
+    <h3>Documentation site</h3>
+        <p>This very site is built with Kiss (dogfooding). Source is in <code>doc-site/</code>.</p>
+<pre><code class="language-sh">make docs           # Build once
+make docs-watch     # Build + watch for changes
+</code></pre>
+<p>On each push to <code>main</code>, the <code>docs.yml</code> workflow builds and deploys
+to GitHub Pages via the <code>gh-pages</code> branch.</p>
+
+            </section>
+</main>
+
+    <footer>
+        <p><a href="https://github.com/amund/kiss-php">💋Kiss v0.2.2</a> - Kiss (Keep It Simply Static) is a php static site generator.</p>
+    </footer>
+</body>
+</html>
