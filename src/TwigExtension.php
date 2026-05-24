@@ -51,6 +51,7 @@ class TwigExtension extends AbstractExtension
             new TwigFilter('markdown', [$this, 'markdownToHtml'], [
                 'is_safe' => ['html'],
             ]),
+            new TwigFilter('slugify', [Tools::class, 'slugify']),
         ];
     }
 
