@@ -3,9 +3,17 @@
 {% block content %}
 <h2>{{ title }}</h2>
 
+{% if sections|length > 1 %}
+<ul class="toc">
+{% for section in sections %}
+  <li><a href="#{{ section.title|slugify }}">{{ section.title }}</a></li>
+{% endfor %}
+</ul>
+{% endif %}
+
 {% for section in sections %}
 <section>
-    <h3>{{ section.title }}</h3>
+    <h3 id="{{ section.title|slugify }}">{{ section.title }}</h3>
     {% if section.content is defined %}
     {{ section.content|markdown|raw }}
     {% endif %}

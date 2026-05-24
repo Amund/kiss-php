@@ -38,15 +38,15 @@ data:
             site --> output[Output]
             output --> web[web/]
 
-            style site fill:#1e293b,stroke:#475569,color:#e2e8f0
+            style site fill:#27272a,stroke:#52525b,color:#e4e4e7
             style config fill:#16a34a,stroke:#15803d,color:#fff
-            style sources fill:transparent,stroke-dasharray:4 2,stroke:#475569,color:#94a3b8
-            style output fill:transparent,stroke-dasharray:4 2,stroke:#475569,color:#94a3b8
-            style copy fill:#334155,stroke:#475569,color:#e2e8f0
-            style data fill:#334155,stroke:#475569,color:#e2e8f0
-            style route fill:#334155,stroke:#475569,color:#e2e8f0
-            style template fill:#334155,stroke:#475569,color:#e2e8f0
-            style web fill:#334155,stroke:#475569,color:#e2e8f0
+            style sources fill:transparent,stroke-dasharray:4 2,stroke:#52525b,color:#a1a1aa
+            style output fill:transparent,stroke-dasharray:4 2,stroke:#52525b,color:#a1a1aa
+            style copy fill:#3f3f46,stroke:#52525b,color:#e4e4e7
+            style data fill:#3f3f46,stroke:#52525b,color:#e4e4e7
+            style route fill:#3f3f46,stroke:#52525b,color:#e4e4e7
+            style template fill:#3f3f46,stroke:#52525b,color:#e4e4e7
+            style web fill:#3f3f46,stroke:#52525b,color:#e4e4e7
         ```
 
     - title: Configuration file

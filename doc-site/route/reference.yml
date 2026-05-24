@@ -63,6 +63,15 @@ data:
         {{ content|markdown|raw }}
         ```
 
+        ### `slugify`
+
+        Converts a string into a URL-safe slug :
+
+        ```twig
+        {{ 'Hello World'|slugify }}    → hello-world
+        {{ section.title|slugify }}     → ma-section
+        ```
+
     - title: Data sources
       content: |
         Files in `data/` are loaded automatically and accessible via `{{ global.* }}`.
@@ -105,6 +114,35 @@ data:
           code: |
             name = My Site
             tagline = Great static site
+    - title: Caching
+      content: |
+        Every data source is transformed into a PHP file and cached in
+        `/tmp/kiss/<hash>/datatree/`.
+
+        **How it works :**
+
+        1. A `.yml`, `.json`, `.xml`, `.ini`, `.md` or `.php` file is loaded
+        2. The appropriate loader parses it (YamlLoader, JsonLoader, etc.)
+        3. The result is serialized as a PHP file via `var_export()` and stored
+        4. On subsequent builds, the cached PHP is included — no parsing needed
+        5. When the source file changes, the cache is invalidated
+
+        **Same mechanism for `$ref` and remote files :**
+
+        ```yaml
+        items:
+          $ref: https://api.example.com/posts.json
+        ```
+
+        URLs are fetched once, cached as PHP, and served from cache on rebuilds
+        until the resource changes.
+
+        **Cache invalidation :**
+
+        - `kiss reset cache` removes all cached files
+        - `DataTree::invalidate(source)` removes a single entry
+        - Automatic when the source file's CRC32C changes
+
     - title: Markdown
       content: |
         ```markdown
