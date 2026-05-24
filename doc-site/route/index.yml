@@ -1,30 +1,48 @@
 path: /index.html
 template: page.twig
 data:
-  title: Accueil
+  title: Home
   sections:
-    - title: Installation
+    - title: What is Kiss?
+      content: |
+        Kiss is a PHP static site generator. It uses **Twig** for templating,
+        supports YAML/JSON/PHP/XML/INI data sources, dynamic page parameters,
+        static file sync, and a *watch* mode with partial rebuilds.
+      image: img/image.png
+
+    - title: Quick start
       content: |
         ```sh
         composer global require amund/kiss-php
-        kiss init mon-site
-        cd mon-site
+        kiss init my-site
+        cd my-site
         kiss build
         ```
-    - title: Commandes
+
+    - title: Features
       content: |
-        | Commande | Description |
-        |---|---|
-        | `kiss init` | Crée un nouveau site |
-        | `kiss build` | Build le site complet |
-        | `kiss watch` | Build + watch |
-        | `kiss route` | Liste ou rebuild des routes |
-    - title: Fonctionnalités
+        - **`items`** - dedicated property for child pages
+        - **`path()`** - URL generation between routes
+        - **`route()`** - cross-route data access
+        - **`asset()`** - signed URLs (cache busting)
+        - **`paginate`** - automatic pagination
+        - **Partial rebuilds** - only impacted routes on file change
+
+    - title: Workflow
       content: |
-        - **`items`** — propriété dédiée pour les pages enfants
-        - **`path()`** — génération d'URLs entre routes
-        - **`route()`** — accès aux données d'une autre route
-        - **`asset()`** — URLs signées (cache busting)
-        - **`paginate`** — pagination automatique
-    - title: Licence
+        ```mermaid
+        graph TD
+            A[kiss.yml] --> B[Config]
+            B --> C[Build]
+            C --> D[copy dir]
+            D --> I[Static files]
+            C --> E[route dir]
+            E --> F[items + data]
+            F --> G[Twig render]
+            G --> H[HTML pages]
+            H --> J[Route manifest]
+            J --> K[Clean stale files]
+        ```
+
+    - title: License
       content: MIT

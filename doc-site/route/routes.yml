@@ -1,0 +1,163 @@
+path: /routes.html
+template: page.twig
+data:
+  title: Routes
+  sections:
+    - title: Single page
+      tabs:
+        - label: YAML
+          language: yaml
+          code: |
+            path: /index.html
+            template: page.twig
+            data:
+              title: Home
+        - label: JSON
+          language: json
+          code: |
+            {
+              "path": "/index.html",
+              "template": "page.twig",
+              "data": {
+                "title": "Home"
+              }
+            }
+        - label: PHP
+          language: php
+          code: |
+            <?php
+            return [
+              'path' => '/index.html',
+              'template' => 'page.twig',
+              'data' => ['title' => 'Home'],
+            ];
+
+    - title: Pages with parameters
+      content: |
+        `route/blog.yml` :
+
+      tabs:
+        - label: YAML
+          language: yaml
+          code: |
+            path: /{slug}.html
+            template: post.twig
+            data:
+              blog_title: "My Blog"
+            items:
+              - slug: hello-world
+                title: Hello World
+              - slug: second-article
+                title: Second article
+        - label: JSON
+          language: json
+          code: |
+            {
+              "path": "/{slug}.html",
+              "template": "post.twig",
+              "data": {
+                "blog_title": "My Blog"
+              },
+              "items": [
+                {
+                  "slug": "hello-world",
+                  "title": "Hello World"
+                },
+                {
+                  "slug": "second-article",
+                  "title": "Second article"
+                }
+              ]
+            }
+        - label: PHP
+          language: php
+          code: |
+            <?php
+            return [
+              'path' => '/{slug}.html',
+              'template' => 'post.twig',
+              'data' => ['blog_title' => 'My Blog'],
+              'items' => [
+                ['slug' => 'hello-world', 'title' => 'Hello World'],
+                ['slug' => 'second-article', 'title' => 'Second article'],
+              ],
+            ];
+    - title: Notes
+      content: |
+        Each item generates a separate page. `data` contains metadata,
+        merged into every child page.
+
+    - title: External reference ($ref)
+      tabs:
+        - label: YAML
+          language: yaml
+          code: |
+            path: /{slug}.html
+            template: post.twig
+            items:
+              $ref: data/articles.yml
+        - label: JSON
+          language: json
+          code: |
+            {
+              "path": "/{slug}.html",
+              "template": "post.twig",
+              "items": {
+                "$ref": "data/articles.yml"
+              }
+            }
+        - label: PHP
+          language: php
+          code: |
+            <?php
+            return [
+              'path' => '/{slug}.html',
+              'template' => 'post.twig',
+              'items' => ['$ref' => 'data/articles.yml'],
+            ];
+
+    - title: Archive page with list
+      content: |
+        ```yaml
+        path: /blog
+        template: blog_list.twig
+        data:
+          title: "Blog"
+        items:
+          $ref: data/posts.yml
+        ```
+
+        Template :
+
+        ```twig
+        <h1>{{ title }}</h1>
+        {% for post in items %}
+          <a href="{{ path('blog', {slug: post.slug}) }}">{{ post.title }}</a>
+        {% endfor %}
+        ```
+
+    - title: Pagination
+      content: |
+        ```yaml
+        path: /blog
+        template: blog_list.twig
+        paginate: 10
+        data:
+          title: Archives
+        items:
+          $ref: data/posts.yml
+        ```
+
+        Generates `blog/index.html` (page 1) and `blog/page/{n}/index.html`.
+
+        ```twig
+        {% for post in items %}
+          ...
+        {% endfor %}
+        {% if prevPage %}
+          <a href="{{ path('blog', {page: prevPage}) }}">← Previous</a>
+        {% endif %}
+        {% if nextPage %}
+          <a href="{{ path('blog', {page: nextPage}) }}">Next →</a>
+        {% endif %}
+        ```

@@ -1,7 +1,0 @@
-name: Kiss
-tagline: "Keep It Simply Static"
-description: |
-  Kiss is a PHP static site generator using Twig for templating,
-  YAML/JSON/PHP data sources, and a full-featured build system.
-github: https://github.com/amund/kiss-php
-version: 0.1.1

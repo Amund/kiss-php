@@ -3,51 +3,127 @@ template: page.twig
 data:
   title: Documentation
   sections:
-    - title: Routes
+    - title: Installation
       content: |
-        Une route se définit dans `route/` avec `path` et `template`.
+        Via Composer (global) :
 
-        ```yaml
-        path: /{slug}.html
-        template: post.twig
-        data:
-          blog_title: Mon Blog
-        items:
-          - slug: hello
-            title: Hello World
+        ```sh
+        composer global require amund/kiss-php
+        kiss init my-site
+        cd my-site
+        kiss build
         ```
-    - title: Liens entre pages
+
+        Via PHAR (no Composer needed) :
+
+        ```sh
+        curl -LO https://github.com/amund/kiss-php/releases/latest/download/kiss.phar
+        chmod +x kiss.phar
+        ./kiss.phar init my-site
+        cd my-site
+        ./kiss.phar build
+        ```
+
+    - title: Project structure
       content: |
-        ```twig
-        {{ path('about') }}
-        {{ path('blog', {slug: 'hello'}) }}
-        {{ path('blog', {page: 2}) }}
+        ```mermaid
+        graph LR
+            site[/project/]
+            site --> config(kiss.yml)
+            site --> sources[Sources]
+            sources --> copy[copy/]
+            sources --> data[data/]
+            sources --> route[route/]
+            sources --> template[template/]
+            site --> output[Output]
+            output --> web[web/]
+
+            style site fill:#1e293b,stroke:#475569,color:#e2e8f0
+            style config fill:#16a34a,stroke:#15803d,color:#fff
+            style sources fill:transparent,stroke-dasharray:4 2,stroke:#475569,color:#94a3b8
+            style output fill:transparent,stroke-dasharray:4 2,stroke:#475569,color:#94a3b8
+            style copy fill:#334155,stroke:#475569,color:#e2e8f0
+            style data fill:#334155,stroke:#475569,color:#e2e8f0
+            style route fill:#334155,stroke:#475569,color:#e2e8f0
+            style template fill:#334155,stroke:#475569,color:#e2e8f0
+            style web fill:#334155,stroke:#475569,color:#e2e8f0
         ```
-    - title: Données croisées
+
+    - title: Configuration file
       content: |
-        ```twig
-        {% set blog = route('blog') %}
-        <h1>{{ blog.title }}</h1>
-        {% for post in blog.items %}
-          <a href="{{ path('blog', {slug: post.slug}) }}">
-            {{ post.title }}
-          </a>
-        {% endfor %}
-        ```
-    - title: Pagination
+        Supported formats : YAML, JSON, PHP, XML, INI.
+
+      tabs:
+        - label: YAML
+          language: yaml
+          code: |
+            debug: true
+            path:
+              copy: copy
+              data: data
+              route: route
+              template: template
+              dist: web
+              cache: tmp
+        - label: JSON
+          language: json
+          code: |
+            {
+              "debug": true,
+              "path": {
+                "copy": "copy",
+                "data": "data",
+                "route": "route",
+                "template": "template",
+                "dist": "web",
+                "cache": "tmp"
+              }
+            }
+        - label: PHP
+          language: php
+          code: |
+            <?php
+            return [
+              'debug' => true,
+              'path' => [
+                'copy' => 'copy',
+                'data' => 'data',
+                'route' => 'route',
+                'template' => 'template',
+                'dist' => 'web',
+                'cache' => 'tmp',
+              ],
+            ];
+        - label: XML
+          language: xml
+          code: |
+            <?xml version="1.0"?>
+            <root>
+              <debug>true</debug>
+              <path>
+                <copy>copy</copy>
+                <data>data</data>
+                <route>route</route>
+                <template>template</template>
+                <dist>web</dist>
+                <cache>tmp</cache>
+              </path>
+            </root>
+        - label: INI
+          language: ini
+          code: |
+            debug = true
+            [path]
+            copy = copy
+            data = data
+            route = route
+            template = template
+            dist = web
+            cache = tmp
+    - title: Environment
       content: |
-        ```yaml
-        path: /blog
-        template: blog_list.twig
-        paginate: 10
-        data:
-          title: Archives
-        items:
-          $ref: data/posts.yml
-        ```
-    - title: Assets signés
-      content: |
-        ```twig
-        <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-        <!-- → /css/style.css?v=crc32c_hash -->
-        ```
+        Environment overrides :
+
+        - `KISS_DEBUG=true`
+        - `KISS_VERBOSE=true`
+        - `KISS_ENTRY=path/to/config.yml`

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{{ title }}{% endblock %} - {{ global.site.name }}</title>
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('pre code.language-mermaid').forEach(function(el) {
+            var pre = el.parentElement;
+            pre.textContent = el.textContent;
+            pre.classList.add('mermaid');
+        });
+        var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: dark ? '#22c55e' : '#16a34a',
+                primaryBorderColor: dark ? '#166534' : '#15803d',
+                lineColor: dark ? '#475569' : '#94a3b8',
+                tertiaryColor: dark ? '#1e293b' : '#f8fafc',
+                background: dark ? '#09090b' : '#ffffff',
+            }
+        });
+    });
+    </script>
+</head>
+<body>
+    <header>
+        <h1>{{ global.site.name }}</h1>
+        <p class="tagline">{{ global.site.tagline }}</p>
+        <nav>
+            <a href="{{ path('index') }}">Home</a>
+            <a href="{{ path('docs') }}">Docs</a>
+            <a href="{{ path('routes') }}">Routes</a>
+            <a href="{{ path('reference') }}">Reference</a>
+            <a href="{{ path('development') }}">Dev</a>
+            <a href="{{ global.site.homepage }}">GitHub</a>
+        </nav>
+    </header>
+
+    <main>{% block content %}{% endblock %}</main>
+
+    <footer>
+        <p><a href="{{ global.site.homepage }}">{{ global.site.name }} v{{ global.site.version }}</a> - {{ global.site.description }}</p>
+    </footer>
+</body>
+</html>

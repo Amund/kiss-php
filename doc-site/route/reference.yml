@@ -1,0 +1,135 @@
+path: /reference.html
+template: page.twig
+data:
+  title: Reference
+  sections:
+    - title: Twig functions
+      content: |
+        ### `path(name, params)`
+
+        Generates URLs between routes :
+
+        ```twig
+        {{ path('about') }}                          → /about
+        {{ path('blog', {slug: 'hello'}) }}          → /hello.html
+        {{ path('blog') }}                            → /blog
+        {{ path('blog', {page: 2}) }}                 → /blog/page/2
+        ```
+
+        Trailing `/index.html` is automatically cleaned :
+
+        ```twig
+        {{ path('index') }}                           → /
+        {{ path('blog') }}                            → /blog
+        ```
+
+        ### `route(name)`
+
+        Access another route's resolved data :
+
+        ```twig
+        {% set blog = route('blog') %}
+        <h1>{{ blog.title }}</h1>
+        {% for post in blog.items %}
+          <a href="{{ path('blog', {slug: post.slug}) }}">{{ post.title }}</a>
+        {% endfor %}
+        ```
+
+        ### `asset(path)`
+
+        Signed URLs with CRC32C hash for cache busting :
+
+        ```twig
+        <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+        <!-- → /css/style.css?v=70a5a1d3 -->
+        ```
+
+        ### `dump(...)`
+
+        VarDump helper (only in debug mode) :
+
+        ```twig
+        {{ dump() }}
+        {{ dump(foo, bar) }}
+        ```
+
+    - title: Twig filters
+      content: |
+        ### `markdown`
+
+        Converts Markdown to HTML via league/commonmark (GFM) :
+
+        ```twig
+        {{ content|markdown|raw }}
+        ```
+
+    - title: Data sources
+      content: |
+        Files in `data/` are loaded automatically and accessible via `{{ global.* }}`.
+
+        Supported formats : YAML, JSON, PHP, XML, INI, Markdown.
+
+        `data/site.yml` :
+
+      tabs:
+        - label: YAML
+          language: yaml
+          code: |
+            name: My Site
+            tagline: Great static site
+        - label: JSON
+          language: json
+          code: |
+            {
+              "name": "My Site",
+              "tagline": "Great static site"
+            }
+        - label: PHP
+          language: php
+          code: |
+            <?php
+            return [
+              'name' => 'My Site',
+              'tagline' => 'Great static site',
+            ];
+        - label: XML
+          language: xml
+          code: |
+            <?xml version="1.0"?>
+            <root>
+              <name>My Site</name>
+              <tagline>Great static site</tagline>
+            </root>
+        - label: INI
+          language: ini
+          code: |
+            name = My Site
+            tagline = Great static site
+    - title: Markdown
+      content: |
+        ```markdown
+        ---
+        title: My Article
+        date: 2024-01-01
+        ---
+        Content **markdown** here.
+        ```
+
+        Frontmatter fields are available directly, body as `content` :
+
+        ```twig
+        <h1>{{ title }}</h1>
+        <div>{{ content|markdown|raw }}</div>
+        ```
+
+    - title: CLI commands
+      content: |
+        | Command | Description |
+        |---|---|
+        | `kiss init [dir]` | Create a new site |
+        | `kiss build` | Build the whole site |
+        | `kiss watch` | Build then watch for changes |
+        | `kiss route [list\|name]` | List or rebuild routes |
+        | `kiss copy [path]` | Sync a file from `copy/` to `web/` |
+        | `kiss reset [all\|dist\|cache]` | Remove `web/` and/or `tmp/` |
+        | `kiss test` | Validate configuration |

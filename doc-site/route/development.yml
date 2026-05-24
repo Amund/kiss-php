@@ -1,0 +1,49 @@
+path: /development.html
+template: page.twig
+data:
+  title: Development
+  sections:
+    - title: Setup
+      content: |
+        Clone the repository and install dependencies :
+
+        ```sh
+        git clone https://github.com/amund/kiss-php
+        cd kiss-php
+        composer install
+        ```
+
+        You can also run each task via Docker (no local PHP needed) :
+
+        ```sh
+        make install    # composer install
+        make tests      # PHPUnit
+        ```
+
+    - title: Commands
+      content: |
+        | Command | Description |
+        |---|---|
+        | `make install` | `composer install` |
+        | `make tests` | Run all PHPUnit tests |
+        | `make test -- <args>` | Run a specific test |
+        | `make phpcs` | PSR-12 lint |
+        | `make phpstan` | Static analysis |
+        | `make coverage` | HTML coverage report |
+        | `make phar` | Build `kiss.phar` (~2.6MB) |
+        | `make docs` | Build this documentation site |
+
+        Each command runs in a disposable Docker container - no persistent
+        daemons, no docker-compose. Images used : `php:8.2-cli` and `composer:2`.
+
+    - title: Documentation site
+      content: |
+        This very site is built with Kiss (dogfooding). Source is in `doc-site/`.
+
+        ```sh
+        make docs           # Build once
+        make docs-watch     # Build + watch for changes
+        ```
+
+        On each push to `main`, the `docs.yml` workflow builds and deploys
+        to GitHub Pages via the `gh-pages` branch.

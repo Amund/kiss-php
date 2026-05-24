@@ -1,35 +1,30 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ title }} — {{ global.site.name }}</title>
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-</head>
-<body>
-    <header>
-        <h1>{{ global.site.name }}</h1>
-        <p class="tagline">{{ global.site.tagline }}</p>
-        <nav>
-            <a href="{{ path('index') }}">Accueil</a>
-            <a href="{{ path('docs') }}">Documentation</a>
-            <a href="{{ global.site.github }}">GitHub</a>
-        </nav>
-    </header>
+{% extends 'base.twig' %}
 
-    <main>
-        <h2>{{ title }}</h2>
+{% block content %}
+<h2>{{ title }}</h2>
 
-        {% for section in sections %}
-        <section>
-            <h3>{{ section.title }}</h3>
-            {{ section.content|markdown|raw }}
-        </section>
-        {% endfor %}
-    </main>
-
-    <footer>
-        <p>{{ global.site.name }} v{{ global.site.version }} — {{ global.site.description }}</p>
-    </footer>
-</body>
-</html>
+{% for section in sections %}
+<section>
+    <h3>{{ section.title }}</h3>
+    {% if section.content is defined %}
+    {{ section.content|markdown|raw }}
+    {% endif %}
+    {% if section.image is defined %}
+    <img src="{{ asset(section.image) }}" alt="" style="max-width:100%;border-radius:8px;margin-top:1.5rem;margin-inline:auto;display:block;">
+    {% endif %}
+    {% if section.tabs is defined %}
+    <div class="tabs">
+    {% for tab in section.tabs %}
+        <input type="radio" name="tab-{{ loop.parent.loop.index }}"
+               id="tab-{{ loop.parent.loop.index }}-{{ loop.index }}"
+               {{ loop.first ? 'checked' : '' }}>
+        <label for="tab-{{ loop.parent.loop.index }}-{{ loop.index }}">{{ tab.label }}</label>
+        <div class="tab-content">
+<pre><code class="language-{{ tab.language }}">{{ tab.code|e }}</code></pre>
+        </div>
+    {% endfor %}
+    </div>
+    {% endif %}
+</section>
+{% endfor %}
+{% endblock %}
