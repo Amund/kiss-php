@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Documentation - 💋Kiss</title>
-    <link rel="stylesheet" href="/kiss-php/css/style.css?v=a7b9048b">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💋</text></svg>">
+    <link rel="stylesheet" href="/kiss-php/css/style.css?v=9c426bde">
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -36,6 +37,7 @@
             <a href="/kiss-php/">Home</a>
             <a href="/kiss-php/docs.html">Docs</a>
             <a href="/kiss-php/routes.html">Routes</a>
+            <a href="/kiss-php/data.html">Data</a>
             <a href="/kiss-php/reference.html">Reference</a>
             <a href="/kiss-php/development.html">Dev</a>
             <a href="https://github.com/amund/kiss-php">GitHub</a>
@@ -46,9 +48,9 @@
 
 <ul class="toc">
   <li><a href="#installation">Installation</a></li>
-  <li><a href="#project-structure">Project structure</a></li>
+  <li><a href="#default-project-structure">Default project structure</a></li>
   <li><a href="#configuration-file">Configuration file</a></li>
-  <li><a href="#environment">Environment</a></li>
+  <li><a href="#environment-variables">Environment variables</a></li>
 </ul>
 
 <section>
@@ -66,36 +68,32 @@ chmod +x kiss.phar
 cd my-site
 ./kiss.phar build
 </code></pre>
+<p>To be able to just type <code>kiss</code>, move it somewhere in your path, for example :</p>
+<pre><code class="language-sh">curl -LO https://github.com/amund/kiss-php/releases/latest/download/kiss.phar
+chmod +x kiss.phar
+mv kiss.phar ~/.local/bin/kiss
+kiss init my-site
+cd my-site
+kiss build
+</code></pre>
 
             </section>
 <section>
-    <h3 id="project-structure">Project structure</h3>
-        <pre><code class="language-mermaid">graph LR
-    site[/project/]
-    site --&gt; config(kiss.yml)
-    site --&gt; sources[Sources]
-    sources --&gt; copy[copy/]
-    sources --&gt; data[data/]
-    sources --&gt; route[route/]
-    sources --&gt; template[template/]
-    site --&gt; output[Output]
-    output --&gt; web[web/]
-
-    style site fill:#27272a,stroke:#52525b,color:#e4e4e7
-    style config fill:#16a34a,stroke:#15803d,color:#fff
-    style sources fill:transparent,stroke-dasharray:4 2,stroke:#52525b,color:#a1a1aa
-    style output fill:transparent,stroke-dasharray:4 2,stroke:#52525b,color:#a1a1aa
-    style copy fill:#3f3f46,stroke:#52525b,color:#e4e4e7
-    style data fill:#3f3f46,stroke:#52525b,color:#e4e4e7
-    style route fill:#3f3f46,stroke:#52525b,color:#e4e4e7
-    style template fill:#3f3f46,stroke:#52525b,color:#e4e4e7
-    style web fill:#3f3f46,stroke:#52525b,color:#e4e4e7
+    <h3 id="default-project-structure">Default project structure</h3>
+        <pre><code>kiss.yml        → Site configuration
+├── copy/       → Static files (copied as-is to web/)
+├── data/       → Global data (YAML/JSON/PHP/XML/INI/MD)
+├── route/      → Route definitions (YAML/JSON/PHP)
+├── template/   → Twig templates
+└── web/        → Generated site (dist)
 </code></pre>
+<p>These directories are the default ones, but they can be changed in the configuration file.</p>
 
             </section>
 <section>
     <h3 id="configuration-file">Configuration file</h3>
         <p>Supported formats : YAML, JSON, PHP, XML, INI.</p>
+<p><code>cache: system</code> - <code>system</code> is not actually a directory; the value <code>system</code> is replaced with a unique directory within the system directory (e.g., <code>/tmp/kiss/[project-hash]/</code>). Any other value will be treated as a directory.</p>
 
                 <div class="tabs">
             <input type="radio" name="tab-3"
@@ -110,7 +108,7 @@ path:
   route: route
   template: template
   dist: web
-  cache: tmp</code></pre>
+  cache: system</code></pre>
         </div>
             <input type="radio" name="tab-3"
                id="tab-3-2"
@@ -125,7 +123,7 @@ path:
     &quot;route&quot;: &quot;route&quot;,
     &quot;template&quot;: &quot;template&quot;,
     &quot;dist&quot;: &quot;web&quot;,
-    &quot;cache&quot;: &quot;tmp&quot;
+    &quot;cache&quot;: &quot;system&quot;
   }
 }</code></pre>
         </div>
@@ -143,7 +141,7 @@ return [
     &#039;route&#039; =&gt; &#039;route&#039;,
     &#039;template&#039; =&gt; &#039;template&#039;,
     &#039;dist&#039; =&gt; &#039;web&#039;,
-    &#039;cache&#039; =&gt; &#039;tmp&#039;,
+    &#039;cache&#039; =&gt; &#039;system&#039;,
   ],
 ];</code></pre>
         </div>
@@ -161,7 +159,7 @@ return [
     &lt;route&gt;route&lt;/route&gt;
     &lt;template&gt;template&lt;/template&gt;
     &lt;dist&gt;web&lt;/dist&gt;
-    &lt;cache&gt;tmp&lt;/cache&gt;
+    &lt;cache&gt;system&lt;/cache&gt;
   &lt;/path&gt;
 &lt;/root&gt;</code></pre>
         </div>
@@ -177,24 +175,29 @@ data = data
 route = route
 template = template
 dist = web
-cache = tmp</code></pre>
+cache = system</code></pre>
         </div>
         </div>
     </section>
 <section>
-    <h3 id="environment">Environment</h3>
-        <p>Environment overrides :</p>
-<ul>
-<li><code>KISS_DEBUG=true</code></li>
-<li><code>KISS_VERBOSE=true</code></li>
-<li><code>KISS_ENTRY=path/to/config.yml</code></li>
+    <h3 id="environment-variables">Environment variables</h3>
+        <ul>
+<li><code>KISS_DEBUG=true</code> - Set Twig to debug mode, enabling the use of <code>dump()</code></li>
+<li><code>KISS_VERBOSE=true</code> - Add debug information to the console</li>
+<li><code>KISS_ENTRY=path/to/config.yml</code> - you can launch Kiss from anywhere, base folder is the folder containing the config file</li>
+<li><code>KISS_BASE_URL=&quot;&quot;</code> - used internally to deploy on a subfolder</li>
 </ul>
 
             </section>
 </main>
 
     <footer>
-        <p><a href="https://github.com/amund/kiss-php">💋Kiss v0.2.4</a> - Kiss (Keep It Simply Static) is a php static site generator.</p>
+        <p>
+            Made with ❤️ by... 
+            <a href="https://github.com/amund/kiss-php">
+                💋Kiss v0.2.5
+            </a>
+        </p>
     </footer>
 </body>
 </html>

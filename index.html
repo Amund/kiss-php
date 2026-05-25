@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Home - 💋Kiss</title>
-    <link rel="stylesheet" href="/kiss-php/css/style.css?v=a7b9048b">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💋</text></svg>">
+    <link rel="stylesheet" href="/kiss-php/css/style.css?v=9c426bde">
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -36,6 +37,7 @@
             <a href="/kiss-php/">Home</a>
             <a href="/kiss-php/docs.html">Docs</a>
             <a href="/kiss-php/routes.html">Routes</a>
+            <a href="/kiss-php/data.html">Data</a>
             <a href="/kiss-php/reference.html">Reference</a>
             <a href="/kiss-php/development.html">Dev</a>
             <a href="https://github.com/amund/kiss-php">GitHub</a>
@@ -54,9 +56,7 @@
 
 <section>
     <h3 id="what-is-kiss">What is Kiss?</h3>
-        <p>Kiss is a PHP static site generator. It uses <strong>Twig</strong> for templating,
-supports YAML/JSON/PHP/XML/INI data sources, dynamic page parameters,
-static file sync, and a <em>watch</em> mode with partial rebuilds.</p>
+        <p>Kiss is a static site generator written in PHP. It features a simple yet flexible routing system, supports YAML, JSON, PHP, XML, INI and MD as data sources, and uses <strong>Twig</strong> as its templating engine.</p>
 
             <img src="/kiss-php/img/image.png?v=67a45086" alt="" style="max-width:100%;border-radius:8px;margin-top:1.5rem;margin-inline:auto;display:block;">
         </section>
@@ -72,12 +72,13 @@ kiss build
 <section>
     <h3 id="features">Features</h3>
         <ul>
-<li><strong><code>items</code></strong> - dedicated property for child pages</li>
-<li><strong><code>path()</code></strong> - URL generation between routes</li>
-<li><strong><code>route()</code></strong> - cross-route data access</li>
-<li><strong><code>asset()</code></strong> - signed URLs (cache busting)</li>
-<li><strong><code>paginate</code></strong> - automatic pagination</li>
-<li><strong>Partial rebuilds</strong> - only impacted routes on file change</li>
+<li><strong>Easy installation</strong> - Composer (1 line) or Phar (1 file)</li>
+<li><strong>No database</strong> - Everything is stored in flat files, easy to git</li>
+<li><strong>Multi-source</strong> - Supports YAML/JSON/PHP/XML/INI/MD as data sources</li>
+<li><strong>Static/Dynamic</strong> - The generated site is static, but the PHP data sources can be dynamic</li>
+<li><strong>High-performance</strong> - All data is read and processed in PHP to be cached</li>
+<li><strong>Fast-Cache</strong> - By default, the system cache directory is used; if it is tmpfs in RAM, performance is affected</li>
+<li><strong>Twig</strong> - No surprises here—there must be very few PHP developers who have never touched a Twig file</li>
 </ul>
 
             </section>
@@ -105,7 +106,12 @@ kiss build
 </main>
 
     <footer>
-        <p><a href="https://github.com/amund/kiss-php">💋Kiss v0.2.4</a> - Kiss (Keep It Simply Static) is a php static site generator.</p>
+        <p>
+            Made with ❤️ by... 
+            <a href="https://github.com/amund/kiss-php">
+                💋Kiss v0.2.5
+            </a>
+        </p>
     </footer>
 </body>
 </html>

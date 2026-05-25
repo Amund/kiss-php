@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Reference - 💋Kiss</title>
-    <link rel="stylesheet" href="/kiss-php/css/style.css?v=a7b9048b">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💋</text></svg>">
+    <link rel="stylesheet" href="/kiss-php/css/style.css?v=9c426bde">
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -36,6 +37,7 @@
             <a href="/kiss-php/">Home</a>
             <a href="/kiss-php/docs.html">Docs</a>
             <a href="/kiss-php/routes.html">Routes</a>
+            <a href="/kiss-php/data.html">Data</a>
             <a href="/kiss-php/reference.html">Reference</a>
             <a href="/kiss-php/development.html">Dev</a>
             <a href="https://github.com/amund/kiss-php">GitHub</a>
@@ -47,9 +49,6 @@
 <ul class="toc">
   <li><a href="#twig-functions">Twig functions</a></li>
   <li><a href="#twig-filters">Twig filters</a></li>
-  <li><a href="#data-sources">Data sources</a></li>
-  <li><a href="#caching">Caching</a></li>
-  <li><a href="#markdown">Markdown</a></li>
   <li><a href="#cli-commands">CLI commands</a></li>
 </ul>
 
@@ -100,108 +99,6 @@
 
             </section>
 <section>
-    <h3 id="data-sources">Data sources</h3>
-        <p>Files in <code>data/</code> are loaded automatically and accessible via <code>{{ global.* }}</code>.</p>
-<p>Supported formats : YAML, JSON, PHP, XML, INI, Markdown.</p>
-<p><code>data/site.yml</code> :</p>
-
-                <div class="tabs">
-            <input type="radio" name="tab-3"
-               id="tab-3-1"
-               checked>
-        <label for="tab-3-1">YAML</label>
-        <div class="tab-content">
-<pre><code class="language-yaml">name: My Site
-tagline: Great static site
-</code></pre>
-        </div>
-            <input type="radio" name="tab-3"
-               id="tab-3-2"
-               >
-        <label for="tab-3-2">JSON</label>
-        <div class="tab-content">
-<pre><code class="language-json">{
-  &quot;name&quot;: &quot;My Site&quot;,
-  &quot;tagline&quot;: &quot;Great static site&quot;
-}
-</code></pre>
-        </div>
-            <input type="radio" name="tab-3"
-               id="tab-3-3"
-               >
-        <label for="tab-3-3">PHP</label>
-        <div class="tab-content">
-<pre><code class="language-php">&lt;?php
-return [
-  &#039;name&#039; =&gt; &#039;My Site&#039;,
-  &#039;tagline&#039; =&gt; &#039;Great static site&#039;,
-];
-</code></pre>
-        </div>
-            <input type="radio" name="tab-3"
-               id="tab-3-4"
-               >
-        <label for="tab-3-4">XML</label>
-        <div class="tab-content">
-<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot;?&gt;
-&lt;root&gt;
-  &lt;name&gt;My Site&lt;/name&gt;
-  &lt;tagline&gt;Great static site&lt;/tagline&gt;
-&lt;/root&gt;
-</code></pre>
-        </div>
-            <input type="radio" name="tab-3"
-               id="tab-3-5"
-               >
-        <label for="tab-3-5">INI</label>
-        <div class="tab-content">
-<pre><code class="language-ini">name = My Site
-tagline = Great static site
-</code></pre>
-        </div>
-        </div>
-    </section>
-<section>
-    <h3 id="caching">Caching</h3>
-        <p>Every data source is transformed into a PHP file and cached in
-<code>/tmp/kiss/&lt;hash&gt;/datatree/</code>.</p>
-<p><strong>How it works :</strong></p>
-<ol>
-<li>A <code>.yml</code>, <code>.json</code>, <code>.xml</code>, <code>.ini</code>, <code>.md</code> or <code>.php</code> file is loaded</li>
-<li>The appropriate loader parses it (YamlLoader, JsonLoader, etc.)</li>
-<li>The result is serialized as a PHP file via <code>var_export()</code> and stored</li>
-<li>On subsequent builds, the cached PHP is included — no parsing needed</li>
-<li>When the source file changes, the cache is invalidated</li>
-</ol>
-<p><strong>Same mechanism for <code>$ref</code> and remote files :</strong></p>
-<pre><code class="language-yaml">items:
-  $ref: https://api.example.com/posts.json
-</code></pre>
-<p>URLs are fetched once, cached as PHP, and served from cache on rebuilds
-until the resource changes.</p>
-<p><strong>Cache invalidation :</strong></p>
-<ul>
-<li><code>kiss reset cache</code> removes all cached files</li>
-<li><code>DataTree::invalidate(source)</code> removes a single entry</li>
-<li>Automatic when the source file's CRC32C changes</li>
-</ul>
-
-            </section>
-<section>
-    <h3 id="markdown">Markdown</h3>
-        <pre><code class="language-markdown">---
-title: My Article
-date: 2024-01-01
----
-Content **markdown** here.
-</code></pre>
-<p>Frontmatter fields are available directly, body as <code>content</code> :</p>
-<pre><code class="language-twig">&lt;h1&gt;{{ title }}&lt;/h1&gt;
-&lt;div&gt;{{ content|markdown|raw }}&lt;/div&gt;
-</code></pre>
-
-            </section>
-<section>
     <h3 id="cli-commands">CLI commands</h3>
         <table>
 <thead>
@@ -246,7 +143,12 @@ Content **markdown** here.
 </main>
 
     <footer>
-        <p><a href="https://github.com/amund/kiss-php">💋Kiss v0.2.4</a> - Kiss (Keep It Simply Static) is a php static site generator.</p>
+        <p>
+            Made with ❤️ by... 
+            <a href="https://github.com/amund/kiss-php">
+                💋Kiss v0.2.5
+            </a>
+        </p>
     </footer>
 </body>
 </html>
