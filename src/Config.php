@@ -16,7 +16,7 @@ class Config
             'route' => 'route',
             'template' => 'template',
             'dist' => 'web',
-            'cache' => 'tmp',
+            'cache' => 'system',
         ],
         'log' => [
             'verbose' => false,
@@ -103,7 +103,7 @@ class Config
 
         foreach ($this->config['path'] as $k => $path) {
             if ($k === 'cache') {
-                if ($path === 'tmp') {
+                if ($path === 'system') {
                     $path = '/tmp/kiss/' . $projectHash;
                 }
                 $path .= '/kiss';

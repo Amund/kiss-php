@@ -31,7 +31,7 @@ class Kiss
             'route' => 'route',
             'template' => 'template',
             'dist' => 'web',
-            'cache' => 'tmp',
+            'cache' => 'system',
         ],
         'log' => [
             'verbose' => false,

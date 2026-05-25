@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7f35e80cf8c8eaceff4f83a81ffee236",
+    "content-hash": "71d69f3987e3b0ed4a0c424e61e1f515",
     "packages": [
         {
             "name": "dflydev/dot-access-data",
@@ -2122,6 +2122,7 @@
                     "type": "github"
                 }
             ],
+            "abandoned": true,
             "time": "2025-03-19T07:56:08+00:00"
         },
         {
@@ -2178,6 +2179,7 @@
                     "type": "github"
                 }
             ],
+            "abandoned": true,
             "time": "2024-07-03T04:45:54+00:00"
         },
         {

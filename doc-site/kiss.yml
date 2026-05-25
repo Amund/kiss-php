@@ -4,7 +4,7 @@ path:
   route: route
   template: template
   dist: ../docs
-  cache: tmp
+  cache: system
 log:
   verbose: false
 debug: false
