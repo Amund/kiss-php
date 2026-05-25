@@ -3,6 +3,32 @@ template: page.twig
 data:
   title: Routes
   sections:
+    - title: Overview
+      content: |
+        A route is a page definition. Each file in `route/` describes one route,
+        its URL path, its Twig template, and the data it needs to render.
+
+        ### Fields
+
+        | Field | Required | Description |
+        |---|---|---|
+        | `path` | ✓ | URL pattern, e.g. `/about.html` or `/{slug}.html` |
+        | `template` | ✓ | Twig template to render |
+        | `data` | | Metadata or archive context, merged into child pages |
+        | `items` | | Array of child items — one page per item when path has `{param}` |
+        | `paginate` | | Items per page for pagination |
+
+        ### Supported formats
+
+        | Format | Extension | Nested data | `$ref` |
+        |---|---|---|---|
+        | YAML | `.yml` / `.yaml` | ✓ | ✓ |
+        | JSON | `.json` | ✓ | ✓ |
+        | PHP | `.php` | ✓ | ✓ |
+
+        > XML and INI are not supported for routes because they cannot represent
+        > nested arrays or the `$ref` syntax required by routes.
+
     - title: Single page
       tabs:
         - label: YAML
@@ -34,7 +60,9 @@ data:
 
     - title: Pages with parameters
       content: |
-        `route/blog.yml` :
+        The `items` key allows you to generate one or multiple pages.
+        Each item in this list generates a separate page.
+        The `data` key contains metadata, merged into every child page.
 
       tabs:
         - label: YAML
@@ -82,12 +110,12 @@ data:
                 ['slug' => 'second-article', 'title' => 'Second article'],
               ],
             ];
-    - title: Notes
-      content: |
-        Each item generates a separate page. `data` contains metadata,
-        merged into every child page.
-
     - title: External reference ($ref)
+      content: |
+        You can reference an external file using the `$ref` keyword.
+        External references can be local files (e.g., `data/articles.yml`)
+        or remote files (e.g., `https://example.com/data/articles.yml`).
+
       tabs:
         - label: YAML
           language: yaml

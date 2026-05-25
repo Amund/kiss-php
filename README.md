@@ -28,7 +28,7 @@ kiss build
 | `kiss copy [path]` | Sync a file from `copy/` to `web/` |
 | `kiss test` | Validate the configuration (warmup without build) |
 
-## Project structure
+## Default project structure
 
 ```
 kiss.yml        → Site configuration
@@ -36,8 +36,7 @@ kiss.yml        → Site configuration
 ├── data/       → Global data (YAML/JSON/PHP/XML/INI/MD)
 ├── route/      → Route definitions (YAML/JSON/PHP/XML/INI)
 ├── template/   → Twig templates
-├── web/        → Generated site (dist)
-└── tmp/        → Cache (resolved to /tmp/kiss/<hash>)
+└── web/        → Generated site (dist)
 ```
 
 ## Configuration
@@ -52,7 +51,7 @@ path:
   route: route
   template: template
   dist: web
-  cache: tmp
+  cache: system
 ```
 
 Environment variables (take precedence):

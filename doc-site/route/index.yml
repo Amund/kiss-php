@@ -5,9 +5,7 @@ data:
   sections:
     - title: What is Kiss?
       content: |
-        Kiss is a PHP static site generator. It uses **Twig** for templating,
-        supports YAML/JSON/PHP/XML/INI data sources, dynamic page parameters,
-        static file sync, and a *watch* mode with partial rebuilds.
+        Kiss is a static site generator written in PHP. It features a simple yet flexible routing system, supports YAML, JSON, PHP, XML, INI and MD as data sources, and uses **Twig** as its templating engine.
       image: img/image.png
 
     - title: Quick start
@@ -21,12 +19,13 @@ data:
 
     - title: Features
       content: |
-        - **`items`** - dedicated property for child pages
-        - **`path()`** - URL generation between routes
-        - **`route()`** - cross-route data access
-        - **`asset()`** - signed URLs (cache busting)
-        - **`paginate`** - automatic pagination
-        - **Partial rebuilds** - only impacted routes on file change
+        - **Easy installation** - Composer (1 line) or Phar (1 file)
+        - **No database** - Everything is stored in flat files, easy to git
+        - **Multi-source** - Supports YAML/JSON/PHP/XML/INI/MD as data sources
+        - **Static/Dynamic** - The generated site is static, but the PHP data sources can be dynamic
+        - **High-performance** - All data is read and processed in PHP to be cached
+        - **Fast-Cache** - By default, the system cache directory is used; if it is tmpfs in RAM, performance is affected
+        - **Twig** - No surprises here—there must be very few PHP developers who have never touched a Twig file
 
     - title: Workflow
       content: |

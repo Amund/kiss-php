@@ -24,34 +24,35 @@ data:
         ./kiss.phar build
         ```
 
-    - title: Project structure
-      content: |
-        ```mermaid
-        graph LR
-            site[/project/]
-            site --> config(kiss.yml)
-            site --> sources[Sources]
-            sources --> copy[copy/]
-            sources --> data[data/]
-            sources --> route[route/]
-            sources --> template[template/]
-            site --> output[Output]
-            output --> web[web/]
+        To be able to just type `kiss`, move it somewhere in your path, for example :
 
-            style site fill:#27272a,stroke:#52525b,color:#e4e4e7
-            style config fill:#16a34a,stroke:#15803d,color:#fff
-            style sources fill:transparent,stroke-dasharray:4 2,stroke:#52525b,color:#a1a1aa
-            style output fill:transparent,stroke-dasharray:4 2,stroke:#52525b,color:#a1a1aa
-            style copy fill:#3f3f46,stroke:#52525b,color:#e4e4e7
-            style data fill:#3f3f46,stroke:#52525b,color:#e4e4e7
-            style route fill:#3f3f46,stroke:#52525b,color:#e4e4e7
-            style template fill:#3f3f46,stroke:#52525b,color:#e4e4e7
-            style web fill:#3f3f46,stroke:#52525b,color:#e4e4e7
+        ```sh
+        curl -LO https://github.com/amund/kiss-php/releases/latest/download/kiss.phar
+        chmod +x kiss.phar
+        mv kiss.phar ~/.local/bin/kiss
+        kiss init my-site
+        cd my-site
+        kiss build
         ```
+
+    - title: Default project structure
+      content: |
+        ```
+        kiss.yml        → Site configuration
+        ├── copy/       → Static files (copied as-is to web/)
+        ├── data/       → Global data (YAML/JSON/PHP/XML/INI/MD)
+        ├── route/      → Route definitions (YAML/JSON/PHP)
+        ├── template/   → Twig templates
+        └── web/        → Generated site (dist)
+        ```
+
+        These directories are the default ones, but they can be changed in the configuration file.
 
     - title: Configuration file
       content: |
         Supported formats : YAML, JSON, PHP, XML, INI.
+
+        `cache: system` - `system` is not actually a directory; the value `system` is replaced with a unique directory within the system directory (e.g., `/tmp/kiss/[project-hash]/`). Any other value will be treated as a directory.
 
       tabs:
         - label: YAML
@@ -64,7 +65,7 @@ data:
               route: route
               template: template
               dist: web
-              cache: tmp
+              cache: system
         - label: JSON
           language: json
           code: |
@@ -76,7 +77,7 @@ data:
                 "route": "route",
                 "template": "template",
                 "dist": "web",
-                "cache": "tmp"
+                "cache": "system"
               }
             }
         - label: PHP
@@ -91,7 +92,7 @@ data:
                 'route' => 'route',
                 'template' => 'template',
                 'dist' => 'web',
-                'cache' => 'tmp',
+                'cache' => 'system',
               ],
             ];
         - label: XML
@@ -106,7 +107,7 @@ data:
                 <route>route</route>
                 <template>template</template>
                 <dist>web</dist>
-                <cache>tmp</cache>
+                <cache>system</cache>
               </path>
             </root>
         - label: INI
@@ -119,11 +120,10 @@ data:
             route = route
             template = template
             dist = web
-            cache = tmp
-    - title: Environment
+            cache = system
+    - title: Environment variables
       content: |
-        Environment overrides :
-
-        - `KISS_DEBUG=true`
-        - `KISS_VERBOSE=true`
-        - `KISS_ENTRY=path/to/config.yml`
+        - `KISS_DEBUG=true` - Set Twig to debug mode, enabling the use of `dump()`
+        - `KISS_VERBOSE=true` - Add debug information to the console
+        - `KISS_ENTRY=path/to/config.yml` - you can launch Kiss from anywhere, base folder is the folder containing the config file
+        - `KISS_BASE_URL=""` - used internally to deploy on a subfolder
