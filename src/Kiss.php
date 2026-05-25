@@ -57,21 +57,25 @@ class Kiss
 
     public function getVersion(): string
     {
-        $root = $this->root !== '' ? $this->root : getcwd();
-        $path = $root . '/composer.json';
-
-        if (!is_file($path)) {
-            return '0.0';
-        }
-
-        $composer = json_decode(file_get_contents($path), true);
+        $composer = $this->getComposerData();
         return $composer['version'] ?? '0.0';
+    }
+
+    private function getComposerData(): array
+    {
+        $pharRunning = class_exists(\Phar::class) && \Phar::running();
+        $path = $pharRunning
+            ? \Phar::running() . '/composer.json'
+            : ($this->root !== '' ? $this->root : getcwd()) . '/composer.json';
+        if (!is_file($path)) {
+            return [];
+        }
+        return json_decode(file_get_contents($path), true) ?? [];
     }
 
     public function config()
     {
-        $entry = getenv('KISS_ENTRY') ?: $this->entry;
-        $config = new Config($this->root, $entry);
+        $config = new Config($this->root, $this->entry);
         $config->load();
         $this->config = $config->toArray();
         $this->log = new Log($this->config['log']);
@@ -96,11 +100,8 @@ class Kiss
 
     public function help()
     {
-        $description =
-            'Kiss is another static site generator, written in php.' .
-            'It uses Twig as a templating system and automatically generates image thumbnails.' .
-            'It supports yaml, json or php data sources, from local or remote files,' .
-            ' maximizing the use of local caches to speed up website building in case of modifications.';
+        $composer = $this->getComposerData();
+        $description = $composer['description'] ?? '';
         $this->log
             ->info('DESCRIPTION')
             ->info('────────────────────')
@@ -118,7 +119,7 @@ class Kiss
             'Copy a single file from copy to dist, or launch a complete mirroring if omitted',
             'route list|[name]' =>
             'List routes, build a single route or all if omitted',
-            'img' => '[TODO] Build images',
+            // 'img' => '[TODO] Build images',
         ];
         $pad = max(array_map('strlen', array_keys($help))) + 8;
         foreach ($help as $k => $v) {

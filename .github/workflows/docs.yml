@@ -17,9 +17,9 @@ jobs:
           php-version: 8.2
           tools: composer
       - run: composer install --no-dev --no-interaction --quiet
-      - run: php $GITHUB_WORKSPACE/src/bin/kiss build
+      - run: php -d phar.readonly=0 build-phar.php
+      - run: cd doc-site && ../kiss.phar build
         env:
-          KISS_ENTRY: doc-site/kiss.yml
           KISS_BASE_URL: /kiss-php
       - uses: peaceiris/actions-gh-pages@v4
         with:

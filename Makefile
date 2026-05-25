@@ -8,7 +8,7 @@ install:
 	@$(COMPOSER) install
 
 tests:
-	@$(PHP) vendor/bin/phpunit 2>&1 | grep -v 'coverage driver\|OK, but there' || true
+	@$(PHP) vendor/bin/phpunit --no-coverage 2>&1
 
 test:
 	@$(PHP) vendor/bin/phpunit $(filter-out $@,$(MAKECMDGOALS))
@@ -37,11 +37,11 @@ phar:
 	 echo "Installed: $(HOME)/.local/bin/kiss"
 
 docs:
-	@KISS_ENTRY=doc-site/kiss.yml kiss build
+	@cd doc-site && kiss build
 	@echo "Docs generated in docs/"
 
 docs-watch:
-	@KISS_ENTRY=doc-site/kiss.yml kiss watch
+	@cd doc-site && kiss watch
 
 tag:
 	@VERSION=$$(jq -r '.version' composer.json); \

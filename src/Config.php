@@ -38,10 +38,6 @@ class Config
         $this->root = empty($this->root)
             ? ''
             : $this->root . \DIRECTORY_SEPARATOR;
-        $dir = dirname($entry);
-        if ($dir !== '.') {
-            $this->root .= $dir . \DIRECTORY_SEPARATOR;
-        }
         $this->basename = pathinfo($entry, PATHINFO_FILENAME);
     }
 

@@ -1,6 +1,6 @@
 {
 	"name": "amund/kiss-php",
-	"version": "0.2.5",
+	"version": "0.2.6",
 	"type": "library",
 	"license": "MIT",
 	"description": "Kiss (Keep It Simply Static) is a php static site generator.",
